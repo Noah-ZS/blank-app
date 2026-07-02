@@ -56,7 +56,7 @@ st.markdown(
 
 @st.cache_data(ttl=300)
 def load_articles():
-    conn = st.connection("snowflake")
+    conn = st.connection("snowflake", type="snowflake")
     df = conn.query(
         """
         SELECT *
