@@ -154,7 +154,7 @@ with tabs[3]:
 
             metier = st.selectbox(
                 "Métier",
-                ["Tous"] + sorted(df["Métier"].unique()),
+                ["Tous"] + sorted(df["metier"].unique()),
                 key=_k("f_metier")
             )
 
