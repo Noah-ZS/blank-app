@@ -251,37 +251,37 @@ with tabs[3]:
         if code_coloris:
             filtered = filtered[
                 filtered["Code Coloris"]
-                .str.contains(code_coloris, case=False)
+                .str.contains(code_coloris)
             ]
 
         if sku:
             filtered = filtered[
                 filtered["Code SKU"]
-                .str.contains(sku, case=False)
+                .str.contains(sku)
             ]
 
         if libelle_article:
             filtered = filtered[
                 filtered["Libellé Article"]
-                .str.contains(libelle_article, case=False)
+                .str.contains(libelle_article)
             ]
 
         if libelle_coloris:
             filtered = filtered[
                 filtered["LIBELLE_COLORIS"]
-                .str.contains(libelle_coloris, case=False)
+                .str.contains(libelle_coloris)
             ]
 
         if famille:
             filtered = filtered[
                 filtered["Famille"]
-                .str.contains(famille, case=False)
+                .str.contains(famille)
             ]
 
         if produit:
             filtered = filtered[
                 filtered["Produit"]
-                .str.contains(produit, case=False)
+                .str.contains(produit)
             ]
 
         if supply != "Tous":
