@@ -174,7 +174,7 @@ with tabs[3]:
 
             supply = st.selectbox(
                 "Supply Chain",
-                ["Tous"] + sorted(df["Supply Chain"].unique()),
+                ["Tous"] + sorted(df["SUPPLY_CHAIN"].unique()),
                 key=_k("f_supply")
             )
 
