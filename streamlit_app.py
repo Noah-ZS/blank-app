@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from io import BytesIO
 
 # --------------------------------------------------------
 # PAGE CONFIG
@@ -111,6 +112,33 @@ if "filtered_df" not in st.session_state:
 df = st.session_state.df
 
 # --------------------------------------------------------
+# WIDGET KEYS FOR THE FILTER FIELDS
+# (needed so we can programmatically reset them)
+# --------------------------------------------------------
+
+FILTER_KEYS = [
+    "f_metier",
+    "f_code_coloris",
+    "f_code_matiere",
+    "f_supply",
+    "f_sku",
+    "f_libelle_article",
+    "f_famille",
+    "f_libelle_coloris",
+    "f_statut",
+    "f_podium",
+    "f_nouveaute",
+    "f_produit",
+]
+
+def reset_filters():
+    """Clear every filter widget back to its default value and reset the table."""
+    for key in FILTER_KEYS:
+        if key in st.session_state:
+            del st.session_state[key]
+    st.session_state.filtered_df = df.copy()
+
+# --------------------------------------------------------
 # TOP NAVIGATION
 # --------------------------------------------------------
 
@@ -168,20 +196,24 @@ with tabs[3]:
 
             metier = st.selectbox(
                 "Métier",
-                ["Tous"] + sorted(df["Métier"].unique())
+                ["Tous"] + sorted(df["Métier"].unique()),
+                key="f_metier"
             )
 
             code_coloris = st.text_input(
-                "Code Coloris"
+                "Code Coloris",
+                key="f_code_coloris"
             )
 
             code_matiere = st.text_input(
-                "Code Matière"
+                "Code Matière",
+                key="f_code_matiere"
             )
 
             supply = st.selectbox(
                 "Supply Chain",
-                ["Tous"] + sorted(df["Supply Chain"].unique())
+                ["Tous"] + sorted(df["Supply Chain"].unique()),
+                key="f_supply"
             )
 
         # ---------------- MIDDLE ----------------
@@ -189,15 +221,18 @@ with tabs[3]:
         with middle:
 
             sku = st.text_input(
-                "Code SKU"
+                "Code SKU",
+                key="f_sku"
             )
 
             libelle_article = st.text_input(
-                "Libellé Article"
+                "Libellé Article",
+                key="f_libelle_article"
             )
 
             famille = st.text_input(
-                "Famille"
+                "Famille",
+                key="f_famille"
             )
 
         # ---------------- RIGHT ----------------
@@ -205,7 +240,8 @@ with tabs[3]:
         with right:
 
             libelle_coloris = st.text_input(
-                "Libellé Coloris"
+                "Libellé Coloris",
+                key="f_libelle_coloris"
             )
 
             statut = st.radio(
@@ -214,15 +250,17 @@ with tabs[3]:
                     "Tous",
                     "Actif",
                     "Inactif"
-                ]
+                ],
+                key="f_statut"
             )
 
-            podium = st.checkbox("Pod-New")
+            podium = st.checkbox("Pod-New", key="f_podium")
 
-            nouveaute = st.checkbox("Nouveauté SKU")
+            nouveaute = st.checkbox("Nouveauté SKU", key="f_nouveaute")
 
             produit = st.text_input(
-                "Produit"
+                "Produit",
+                key="f_produit"
             )
 
     with coloris_tab:
@@ -305,13 +343,23 @@ with tabs[3]:
 
     with b2:
 
-        if st.button("Réinitialiser"):
-
-            st.session_state.filtered_df = df.copy()
+        # Réinitialiser: wipe every filter field back to its default
+        # AND reset the displayed table to the full dataset.
+        st.button("Réinitialiser", on_click=reset_filters)
 
     with b3:
 
-        st.button("Exporter")
+        # Exporter: download the currently filtered table as a CSV file.
+        _export_csv = st.session_state.filtered_df.to_csv(
+            index=False
+        ).encode("utf-8-sig")
+
+        st.download_button(
+            "Exporter",
+            data=_export_csv,
+            file_name="articles_export.csv",
+            mime="text/csv"
+        )
 
     with b4:
 
@@ -337,7 +385,8 @@ left, right = st.columns([3,1])
 with left:
     global_search = st.text_input(
         "🔍 Recherche globale",
-        placeholder="Search in every column..."
+        placeholder="Search in every column...",
+        key="global_search"
     )
 
 with right:
@@ -347,7 +396,7 @@ with right:
     )
 
 
-    display_df = st.session_state.filtered_df.copy()
+display_df = st.session_state.filtered_df.copy()
 
 if global_search:
 
@@ -362,15 +411,13 @@ if global_search:
     display_df = display_df[mask]
 
 
-
-    visible_columns = st.multiselect(
+visible_columns = st.multiselect(
     "Colonnes visibles",
     display_df.columns.tolist(),
     default=display_df.columns.tolist()
 )
 
 display_df = display_df[visible_columns]
-
 
 
 c1, c2 = st.columns(2)
@@ -398,7 +445,7 @@ if sort_column != "Aucun":
     )
 
 
-    ROWS_PER_PAGE = 20
+ROWS_PER_PAGE = 20
 
 total_rows = len(display_df)
 
@@ -449,8 +496,6 @@ with st.expander("Afficher la requête SQL"):
         build_sql(),
         language="sql"
     )
-
-    from io import BytesIO
 
 buffer = BytesIO()
 
