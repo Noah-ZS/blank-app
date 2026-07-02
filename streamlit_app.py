@@ -163,7 +163,10 @@ with tabs[3]:
                 key=_k("f_code_coloris")
             )
 
-
+            code_matiere = st.text_input(
+                "REF ARTICLE",
+                key=_k("f_ref_article")
+            )
 
         # ---------------- COLUMN 2 ----------------
 
