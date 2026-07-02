@@ -241,57 +241,57 @@ with tabs[3]:
 
     def apply_filters(data):
 
-    filtered = data.copy()
+        filtered = data.copy()
 
-    if metier != "Tous":
-        filtered = filtered[
-            filtered["METIER"] == metier
-        ]
+        if metier != "Tous":
+            filtered = filtered[
+                filtered["METIER"] == metier
+            ]
 
-    if code_coloris:
-        filtered = filtered[
-            filtered["CODE COLORIS"].str.contains(code_coloris)
-        ]
+        if code_coloris:
+            filtered = filtered[
+                filtered["CODE COLORIS"].str.contains(code_coloris)
+            ]
 
-    if sku:
-        filtered = filtered[
-            filtered["CODE SKU"].str.contains(sku)
-        ]
+        if sku:
+            filtered = filtered[
+                filtered["CODE SKU"].str.contains(sku)
+            ]
 
-    if libelle_article:
-        filtered = filtered[
-            filtered["LIBELLE ARTICLE"].str.contains(libelle_article)
-        ]
+        if libelle_article:
+            filtered = filtered[
+                filtered["LIBELLE ARTICLE"].str.contains(libelle_article)
+            ]
 
-    if libelle_coloris:
-        filtered = filtered[
-            filtered["LIBELLE_COLORIS"].str.contains(libelle_coloris)
-        ]
+        if libelle_coloris:
+            filtered = filtered[
+                filtered["LIBELLE_COLORIS"].str.contains(libelle_coloris)
+            ]
 
-    if famille:
-        filtered = filtered[
-            filtered["FAMILLE"].str.contains(famille)
-        ]
+        if famille:
+            filtered = filtered[
+                filtered["FAMILLE"].str.contains(famille)
+            ]
 
-    if produit:
-        filtered = filtered[
-            filtered["PRODUIT"].str.contains(produit)
-        ]
+        if produit:
+            filtered = filtered[
+                filtered["PRODUIT"].str.contains(produit)
+            ]
 
-    if supply != "Tous":
-        filtered = filtered[
-            filtered["SUPPLY CHAIN"] == supply
-        ]
+        if supply != "Tous":
+            filtered = filtered[
+                filtered["SUPPLY CHAIN"] == supply
+            ]
 
-    if statut != "Tous":
-        filtered = filtered[
-            filtered["STATUT"] == statut
-        ]
+        if statut != "Tous":
+            filtered = filtered[
+                filtered["STATUT"] == statut
+            ]
 
-    if ref_article:
-        filtered = filtered[
-            filtered["REF_ARTICLE"].str.contains(ref_article)
-        ]
+        if ref_article:
+            filtered = filtered[
+                filtered["REF_ARTICLE"].str.contains(ref_article)
+            ]
 
         return filtered
 
