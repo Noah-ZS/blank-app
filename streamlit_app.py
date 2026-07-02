@@ -10,8 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("aaaaaaaaaa")
-
+st.image("image.png", width=300)
 # --------------------------------------------------------
 # COMPACT STYLING FOR FILTER WIDGETS
 # (tightens vertical spacing so the filter panel doesn't
