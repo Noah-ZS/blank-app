@@ -297,7 +297,7 @@ with tabs[3]:
 
         if ref_article:
              filtered = filtered[
-                filtered["REF ARTICLE"].str.contains(ref_article)
+                filtered["REF_ARTICLE"].str.contains(ref_article)
     ]
 
         return filtered
