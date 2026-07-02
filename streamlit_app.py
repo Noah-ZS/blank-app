@@ -164,78 +164,66 @@ with tabs[3]:
 
         # ---------------- LEFT -----------------
 
-with left:
+        with left:
 
-    metier = st.selectbox(
-        "Métier",
-        ["Tous"] + sorted(df["Métier"].unique()),
-        key="metier"
-    )
+            metier = st.selectbox(
+                "Métier",
+                ["Tous"] + sorted(df["Métier"].unique())
+            )
 
-    code_coloris = st.text_input(
-        "Code Coloris",
-        key="code_coloris"
-    )
+            code_coloris = st.text_input(
+                "Code Coloris"
+            )
 
-    code_matiere = st.text_input(
-        "Code Matière",
-        key="code_matiere"
-    )
+            code_matiere = st.text_input(
+                "Code Matière"
+            )
 
-    supply = st.selectbox(
-        "Supply Chain",
-        ["Tous"] + sorted(df["Supply Chain"].unique()),
-        key="supply"
-    )
+            supply = st.selectbox(
+                "Supply Chain",
+                ["Tous"] + sorted(df["Supply Chain"].unique())
+            )
 
-# ---------------- MIDDLE ----------------
+        # ---------------- MIDDLE ----------------
 
-with middle:
+        with middle:
 
-    sku = st.text_input(
-        "Code SKU",
-        key="sku"
-    )
+            sku = st.text_input(
+                "Code SKU"
+            )
 
-    libelle_article = st.text_input(
-        "Libellé Article",
-        key="libelle_article"
-    )
+            libelle_article = st.text_input(
+                "Libellé Article"
+            )
 
-    famille = st.text_input(
-        "Famille",
-        key="famille"
-    )
+            famille = st.text_input(
+                "Famille"
+            )
 
-# ---------------- RIGHT ----------------
+        # ---------------- RIGHT ----------------
 
-with right:
+        with right:
 
-    libelle_coloris = st.text_input(
-        "Libellé Coloris",
-        key="libelle_coloris"
-    )
+            libelle_coloris = st.text_input(
+                "Libellé Coloris"
+            )
 
-    statut = st.radio(
-        "Statut",
-        ["Tous", "Actif", "Inactif"],
-        key="statut"
-    )
+            statut = st.radio(
+                "Statut",
+                [
+                    "Tous",
+                    "Actif",
+                    "Inactif"
+                ]
+            )
 
-    podium = st.checkbox(
-        "Pod-New",
-        key="podium"
-    )
+            podium = st.checkbox("Pod-New")
 
-    nouveaute = st.checkbox(
-        "Nouveauté SKU",
-        key="nouveaute"
-    )
+            nouveaute = st.checkbox("Nouveauté SKU")
 
-    produit = st.text_input(
-        "Produit",
-        key="produit"
-    )
+            produit = st.text_input(
+                "Produit"
+            )
 
     with coloris_tab:
         st.info("Onglet Coloris")
@@ -318,9 +306,8 @@ with right:
     with b2:
 
         if st.button("Réinitialiser"):
-            st.session_state.filtered_df = st.session_state.df.copy()
-            st.session_state.reset_filters = True
-            st.rerun()
+
+            st.session_state.filtered_df = df.copy()
 
     with b3:
 
@@ -475,4 +462,11 @@ st.download_button(
     data=buffer.getvalue(),
     file_name="articles.xlsx",
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+st.data_editor(
+    display_df,
+    hide_index=True,
+    use_container_width=True,
+    height=550
 )
