@@ -14,6 +14,45 @@ st.set_page_config(
 st.title("Infocentre")
 
 # --------------------------------------------------------
+# COMPACT STYLING FOR FILTER WIDGETS
+# (tightens vertical spacing so the filter panel doesn't
+#  eat up the screen — purely cosmetic CSS)
+# --------------------------------------------------------
+
+st.markdown(
+    """
+    <style>
+    /* shrink the gap Streamlit adds under every widget */
+    div[data-testid="stVerticalBlock"] > div[data-testid="stElementContainer"] {
+        margin-bottom: -14px;
+    }
+    /* smaller, tighter labels */
+    div[data-testid="stWidgetLabel"] label {
+        font-size: 12.5px;
+        margin-bottom: 0px;
+    }
+    /* shorter input / select boxes */
+    div[data-testid="stTextInput"] input {
+        padding-top: 4px;
+        padding-bottom: 4px;
+        height: 32px;
+    }
+    div[data-baseweb="select"] > div {
+        min-height: 32px;
+    }
+    /* tighter radio and checkbox rows */
+    div[data-testid="stRadio"] > div {
+        gap: 0.5rem;
+    }
+    div[data-testid="stCheckbox"] {
+        padding-top: 6px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# --------------------------------------------------------
 # SAMPLE DATABASE
 # --------------------------------------------------------
 
@@ -182,11 +221,11 @@ with tabs[3]:
 
     with general_tab:
 
-        left, middle, right = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4, gap="small")
 
-        # ---------------- LEFT -----------------
+        # ---------------- COLUMN 1 -----------------
 
-        with left:
+        with col1:
 
             metier = st.selectbox(
                 "Métier",
@@ -204,15 +243,15 @@ with tabs[3]:
                 key=_k("f_code_matiere")
             )
 
+        # ---------------- COLUMN 2 ----------------
+
+        with col2:
+
             supply = st.selectbox(
                 "Supply Chain",
                 ["Tous"] + sorted(df["Supply Chain"].unique()),
                 key=_k("f_supply")
             )
-
-        # ---------------- MIDDLE ----------------
-
-        with middle:
 
             sku = st.text_input(
                 "Code SKU",
@@ -224,14 +263,14 @@ with tabs[3]:
                 key=_k("f_libelle_article")
             )
 
+        # ---------------- COLUMN 3 ----------------
+
+        with col3:
+
             famille = st.text_input(
                 "Famille",
                 key=_k("f_famille")
             )
-
-        # ---------------- RIGHT ----------------
-
-        with right:
 
             libelle_coloris = st.text_input(
                 "Libellé Coloris",
@@ -245,17 +284,26 @@ with tabs[3]:
                     "Actif",
                     "Inactif"
                 ],
-                key=_k("f_statut")
+                key=_k("f_statut"),
+                horizontal=True
             )
 
-            podium = st.checkbox("Pod-New", key=_k("f_podium"))
+        # ---------------- COLUMN 4 ----------------
 
-            nouveaute = st.checkbox("Nouveauté SKU", key=_k("f_nouveaute"))
+        with col4:
 
             produit = st.text_input(
                 "Produit",
                 key=_k("f_produit")
             )
+
+            cb1, cb2 = st.columns(2)
+
+            with cb1:
+                podium = st.checkbox("Pod-New", key=_k("f_podium"))
+
+            with cb2:
+                nouveaute = st.checkbox("Nouveauté", key=_k("f_nouveaute"))
 
     with coloris_tab:
         st.info("Onglet Coloris")
