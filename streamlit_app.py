@@ -363,3 +363,56 @@ with tabs[3]:
     else:
 
         st.info("Cliquez sur **Afficher** pour afficher les résultats.")
+
+    # ====================================================
+    # SQL QUERY PREVIEW (bottom of page)
+    # Shows the actual SELECT statement corresponding to the
+    # current filter values, mirroring what apply_filters()
+    # does against the ARTICLES table.
+    # ====================================================
+
+    def build_sql():
+
+        where = []
+
+        if metier != "Tous":
+            where.append(f"METIER = '{metier}'")
+
+        if code_coloris:
+            where.append(f"CODE_COLORIS LIKE '%{code_coloris}%'")
+
+        if ref_article:
+            where.append(f"REF_ARTICLE LIKE '%{ref_article}%'")
+
+        if sku:
+            where.append(f"CODE_SKU LIKE '%{sku}%'")
+
+        if libelle_article:
+            where.append(f"LIBELLE_ARTICLE LIKE '%{libelle_article}%'")
+
+        if libelle_coloris:
+            where.append(f"LIBELLE_COLORIS LIKE '%{libelle_coloris}%'")
+
+        if famille:
+            where.append(f"FAMILLE LIKE '%{famille}%'")
+
+        if produit:
+            where.append(f"PRODUIT LIKE '%{produit}%'")
+
+        if supply != "Tous":
+            where.append(f"SUPPLY_CHAIN = '{supply}'")
+
+        if statut != "Tous":
+            where.append(f"STATUT = '{statut}'")
+
+        sql = "SELECT *\nFROM INFOCENTRE_DB.PUBLIC.ARTICLES"
+
+        if where:
+            sql += "\nWHERE " + "\n  AND ".join(where)
+
+        return sql
+
+    st.divider()
+
+    with st.expander("Afficher la requête SQL"):
+        st.code(build_sql(), language="sql")
