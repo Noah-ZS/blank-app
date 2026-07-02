@@ -1,36 +1,134 @@
 import streamlit as st
 import pandas as pd
 
+# --------------------------------------------------------
+# PAGE CONFIG
+# --------------------------------------------------------
+
 st.set_page_config(
     page_title="Infocentre",
-    layout="wide",
+    layout="wide"
 )
-
-# -------------------------------------------------------
-# HEADER
-# -------------------------------------------------------
 
 st.title("Infocentre")
 
-# -------------------------------------------------------
+# --------------------------------------------------------
+# SAMPLE DATABASE
+# --------------------------------------------------------
+
+if "df" not in st.session_state:
+
+    st.session_state.df = pd.DataFrame({
+        "Métier": [
+            "M","M","M","TEXTILE","TEXTILE","CHAUSSURES"
+        ],
+
+        "Code SKU": [
+            "000091MR00",
+            "000099MR00",
+            "000109MR00",
+            "TX0001",
+            "TX0002",
+            "SH0001"
+        ],
+
+        "Réf Article":[
+            "000091MR",
+            "000099MR",
+            "000109MR",
+            "TX0001",
+            "TX0002",
+            "SH0001"
+        ],
+
+        "Code Coloris":[
+            "00",
+            "01",
+            "02",
+            "BL",
+            "BK",
+            "WH"
+        ],
+
+        "Libellé Article":[
+            "Réparation non référencée",
+            "Réparation Art de vivre",
+            "Remplacement Baleine",
+            "Chemise Oxford",
+            "Pantalon Chino",
+            "Sneakers"
+        ],
+
+        "Libellé Coloris":[
+            "Noir",
+            "Rouge",
+            "Bleu",
+            "Blanc",
+            "Noir",
+            "Blanc"
+        ],
+
+        "Famille":[
+            "SAV",
+            "SAV",
+            "SAV",
+            "Homme",
+            "Homme",
+            "Chaussures"
+        ],
+
+        "Supply Chain":[
+            "A DEFINIR",
+            "Collection",
+            "Collection",
+            "Stock",
+            "Stock",
+            "Collection"
+        ],
+
+        "Produit":[
+            "M981",
+            "M981",
+            "M981",
+            "TX100",
+            "TX200",
+            "SH100"
+        ],
+
+        "Statut":[
+            "Actif",
+            "Actif",
+            "Inactif",
+            "Actif",
+            "Actif",
+            "Inactif"
+        ]
+    })
+
+if "filtered_df" not in st.session_state:
+    st.session_state.filtered_df = st.session_state.df.copy()
+
+df = st.session_state.df
+
+# --------------------------------------------------------
 # TOP NAVIGATION
-# -------------------------------------------------------
+# --------------------------------------------------------
 
 tabs = st.tabs([
     "Menu",
     "Liste des rapports",
     "Article - Emballage",
     "Article - Liste des Coloris / Taille",
-    "Article - Fournisseur",
+    "Article - Fournisseur"
 ])
 
 with tabs[3]:
 
-    # -------------------------------------------------------
+    # ----------------------------------------------------
     # REPORT HEADER
-    # -------------------------------------------------------
+    # ----------------------------------------------------
 
-    c1, c2, c3 = st.columns([4,1,2])
+    c1, c2, c3 = st.columns([5,1,1])
 
     with c1:
         st.text_input(
@@ -42,174 +140,333 @@ with tabs[3]:
     with c2:
         st.selectbox(
             "Vue",
-            ["Initiale"],
+            ["Initiale"]
         )
 
     with c3:
         st.write("")
-        st.write("")
-        st.button("Modification", use_container_width=True)
+        st.button("Modification")
 
-    st.markdown(
-        "<h3 style='text-align:center'>Liste des articles - Coloris - Taille</h3>",
-        unsafe_allow_html=True,
-    )
+    st.subheader("Liste des articles - Coloris - Taille")
 
-    # -------------------------------------------------------
-    # GENERAL / COLORIS
-    # -------------------------------------------------------
+    general_tab, coloris_tab = st.tabs([
+        "Général",
+        "Coloris"
+    ])
 
-    general_tab, coloris_tab = st.tabs(["Général", "Coloris"])
+    # ====================================================
+    # GENERAL TAB
+    # ====================================================
 
     with general_tab:
 
-        left, middle, right = st.columns([3,3,3])
+        left, middle, right = st.columns(3)
 
-        # ---------------- LEFT ----------------
+        # ---------------- LEFT -----------------
 
         with left:
 
-            st.selectbox(
+            metier = st.selectbox(
                 "Métier",
-                [
-                    "M - ART DE VIVRE",
-                    "TEXTILE",
-                    "CHAUSSURES"
-                ]
+                ["Tous"] + sorted(df["Métier"].unique())
             )
 
-            st.text_input("Code Coloris")
+            code_coloris = st.text_input(
+                "Code Coloris"
+            )
 
-            st.text_input("Code Matière Principale")
+            code_matiere = st.text_input(
+                "Code Matière"
+            )
 
-            st.selectbox(
-                "Modèle Supply Chain",
-                [
-                    "Tous",
-                    "A DEFINIR",
-                    "Collection",
-                ]
+            supply = st.selectbox(
+                "Supply Chain",
+                ["Tous"] + sorted(df["Supply Chain"].unique())
             )
 
         # ---------------- MIDDLE ----------------
 
         with middle:
 
-            st.text_input("Code Article (SKU)")
+            sku = st.text_input(
+                "Code SKU"
+            )
 
-            st.text_input("Libellé Coloris")
+            libelle_article = st.text_input(
+                "Libellé Article"
+            )
 
-            st.text_input("Famille")
+            famille = st.text_input(
+                "Famille"
+            )
 
         # ---------------- RIGHT ----------------
 
         with right:
 
-            st.text_input("Libellé Article")
-
-            st.radio(
-                "Statut Article-Coloris",
-                ["Actif", "Inactif"],
-                horizontal=True,
+            libelle_coloris = st.text_input(
+                "Libellé Coloris"
             )
 
-            st.columns(2)
+            statut = st.radio(
+                "Statut",
+                [
+                    "Tous",
+                    "Actif",
+                    "Inactif"
+                ]
+            )
 
-            c1, c2 = st.columns(2)
+            podium = st.checkbox("Pod-New")
 
-            with c1:
-                st.checkbox("Pod-New (O/N)")
+            nouveaute = st.checkbox("Nouveauté SKU")
 
-            with c2:
-                st.checkbox("Nouveauté SKU (O/N)")
-
-            st.text_input("Code Podium")
+            produit = st.text_input(
+                "Produit"
+            )
 
     with coloris_tab:
-        st.info("Coloris tab interface goes here.")
+        st.info("Onglet Coloris")
 
     st.divider()
 
-    # -------------------------------------------------------
-    # TOOLBAR
-    # -------------------------------------------------------
+    # ====================================================
+    # FILTER FUNCTION
+    # ====================================================
 
-    b1, b2, b3, b4 = st.columns([1.6,1,1,1.5])
+    def apply_filters(data):
+
+        filtered = data.copy()
+
+        if metier != "Tous":
+            filtered = filtered[
+                filtered["Métier"] == metier
+            ]
+
+        if code_coloris:
+            filtered = filtered[
+                filtered["Code Coloris"]
+                .str.contains(code_coloris, case=False)
+            ]
+
+        if sku:
+            filtered = filtered[
+                filtered["Code SKU"]
+                .str.contains(sku, case=False)
+            ]
+
+        if libelle_article:
+            filtered = filtered[
+                filtered["Libellé Article"]
+                .str.contains(libelle_article, case=False)
+            ]
+
+        if libelle_coloris:
+            filtered = filtered[
+                filtered["Libellé Coloris"]
+                .str.contains(libelle_coloris, case=False)
+            ]
+
+        if famille:
+            filtered = filtered[
+                filtered["Famille"]
+                .str.contains(famille, case=False)
+            ]
+
+        if produit:
+            filtered = filtered[
+                filtered["Produit"]
+                .str.contains(produit, case=False)
+            ]
+
+        if supply != "Tous":
+            filtered = filtered[
+                filtered["Supply Chain"] == supply
+            ]
+
+        if statut != "Tous":
+            filtered = filtered[
+                filtered["Statut"] == statut
+            ]
+
+        return filtered
+
+    # ====================================================
+    # BUTTONS
+    # ====================================================
+
+    b1, b2, b3, b4 = st.columns(4)
 
     with b1:
-        st.button("Afficher la requête SQL", use_container_width=True)
+
+        if st.button("Afficher"):
+
+            st.session_state.filtered_df = apply_filters(df)
 
     with b2:
-        st.button("Afficher", type="primary", use_container_width=True)
+
+        if st.button("Réinitialiser"):
+
+            st.session_state.filtered_df = df.copy()
 
     with b3:
-        st.button("Exporter", use_container_width=True)
+
+        st.button("Exporter")
 
     with b4:
-        st.button("Sauvegarder la vue", use_container_width=True)
+
+        st.button("Sauvegarder la vue")
 
     st.divider()
 
-    # -------------------------------------------------------
-    # GRID TOOLBAR
-    # -------------------------------------------------------
-
-    g1, g2, g3 = st.columns(3)
-
-    g1.button("Trier", use_container_width=True)
-    g2.button("Filtrer", use_container_width=True)
-    g3.button("Personnaliser", use_container_width=True)
-
-    st.divider()
-
-    # -------------------------------------------------------
-    # SAMPLE TABLE
-    # -------------------------------------------------------
-
-    data = pd.DataFrame(
-        {
-            "Métier": ["M", "M", "M"],
-            "Code SKU": [
-                "000091MR00",
-                "000099MR00",
-                "000109MR00",
-            ],
-            "Réf Article": [
-                "000091MR",
-                "000099MR",
-                "000109MR",
-            ],
-            "Code Coloris": [
-                "00",
-                "00",
-                "00",
-            ],
-            "Libellé Coloris": [
-                "",
-                "",
-                "",
-            ],
-            "Libellé Français": [
-                "REPARATION NON REFERENCEE",
-                "REPARATION ART DE VIVRE",
-                "REMPLACEMENT BALEINE",
-            ],
-            "Supply Chain": [
-                "A DEFINIR",
-                "A DEFINIR",
-                "A DEFINIR",
-            ],
-            "Produit": [
-                "M981",
-                "M981",
-                "M981",
-            ],
-        }
-    )
+    # ====================================================
+    # TABLE
+    # ====================================================
 
     st.data_editor(
-        data,
+        st.session_state.filtered_df,
         use_container_width=True,
         hide_index=True,
-        height=450,
+        height=500
     )
+
+    st.divider()
+
+left, right = st.columns([3,1])
+
+with left:
+    global_search = st.text_input(
+        "🔍 Recherche globale",
+        placeholder="Search in every column..."
+    )
+
+with right:
+    st.metric(
+        "Résultats",
+        len(st.session_state.filtered_df)
+    )
+
+
+    display_df = st.session_state.filtered_df.copy()
+
+if global_search:
+
+    mask = display_df.astype(str).apply(
+        lambda col: col.str.contains(
+            global_search,
+            case=False,
+            na=False
+        )
+    ).any(axis=1)
+
+    display_df = display_df[mask]
+
+
+
+    visible_columns = st.multiselect(
+    "Colonnes visibles",
+    display_df.columns.tolist(),
+    default=display_df.columns.tolist()
+)
+
+display_df = display_df[visible_columns]
+
+
+
+c1, c2 = st.columns(2)
+
+with c1:
+
+    sort_column = st.selectbox(
+        "Trier par",
+        ["Aucun"] + display_df.columns.tolist()
+    )
+
+with c2:
+
+    sort_order = st.radio(
+        "Ordre",
+        ["Ascendant", "Descendant"],
+        horizontal=True
+    )
+
+if sort_column != "Aucun":
+
+    display_df = display_df.sort_values(
+        by=sort_column,
+        ascending=sort_order == "Ascendant"
+    )
+
+
+    ROWS_PER_PAGE = 20
+
+total_rows = len(display_df)
+
+pages = max(1, (total_rows - 1)//ROWS_PER_PAGE + 1)
+
+page = st.number_input(
+    "Page",
+    min_value=1,
+    max_value=pages,
+    value=1
+)
+
+start = (page-1)*ROWS_PER_PAGE
+end = start + ROWS_PER_PAGE
+
+display_df = display_df.iloc[start:end]
+
+
+def build_sql():
+
+    where = []
+
+    if metier != "Tous":
+        where.append(f"Metier='{metier}'")
+
+    if sku:
+        where.append(f"CodeSKU LIKE '%{sku}%'")
+
+    if code_coloris:
+        where.append(f"CodeColoris LIKE '%{code_coloris}%'")
+
+    if libelle_article:
+        where.append(
+            f"LibelleArticle LIKE '%{libelle_article}%'"
+        )
+
+    sql = "SELECT * FROM Articles"
+
+    if where:
+        sql += "\nWHERE " + "\nAND ".join(where)
+
+    return sql
+
+
+with st.expander("Afficher la requête SQL"):
+
+    st.code(
+        build_sql(),
+        language="sql"
+    )
+
+    from io import BytesIO
+
+buffer = BytesIO()
+
+with pd.ExcelWriter(buffer) as writer:
+    display_df.to_excel(writer, index=False)
+
+st.download_button(
+    "📥 Export Excel",
+    data=buffer.getvalue(),
+    file_name="articles.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+st.data_editor(
+    display_df,
+    hide_index=True,
+    use_container_width=True,
+    height=550
+)
