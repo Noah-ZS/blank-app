@@ -163,7 +163,7 @@ with tabs[3]:
                 key=_k("f_code_coloris")
             )
 
-            code_matiere = st.text_input(
+            ref_article = st.text_input(
                 "REF ARTICLE",
                 key=_k("f_ref_article")
             )
@@ -293,6 +293,12 @@ with tabs[3]:
             filtered = filtered[
                 filtered["STATUT"] == statut
             ]
+
+
+        if ref_article:
+             filtered = filtered[
+                filtered["REF ARTICLE"].str.contains(ref_article)
+    ]
 
         return filtered
 
