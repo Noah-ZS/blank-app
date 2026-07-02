@@ -250,17 +250,17 @@ with tabs[3]:
 
         if code_coloris:
             filtered = filtered[
-                filtered["CODE COLORIS"].str.contains(code_coloris)
+                filtered["CODE_COLORIS"].str.contains(code_coloris)
             ]
 
         if sku:
             filtered = filtered[
-                filtered["CODE SKU"].str.contains(sku)
+                filtered["CODE_SKU"].str.contains(sku)
             ]
 
         if libelle_article:
             filtered = filtered[
-                filtered["LIBELLE ARTICLE"].str.contains(libelle_article)
+                filtered["LIBELLE_ARTICLE"].str.contains(libelle_article)
             ]
 
         if libelle_coloris:
@@ -280,7 +280,7 @@ with tabs[3]:
 
         if supply != "Tous":
             filtered = filtered[
-                filtered["SUPPLY CHAIN"] == supply
+                filtered["SUPPLY_CHAIN"] == supply
             ]
 
         if statut != "Tous":
