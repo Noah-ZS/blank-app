@@ -51,7 +51,7 @@ st.markdown(
 )
 
 # --------------------------------------------------------
-# SAMPLE DATABASE
+# SNOWFLAKE DATA
 # --------------------------------------------------------
 
 @st.cache_data(ttl=300)
@@ -70,10 +70,20 @@ if "df" not in st.session_state:
     st.session_state.df = load_articles()
 
 df = st.session_state.df
-if "filtered_df" not in st.session_state:
-    st.session_state.filtered_df = st.session_state.df.copy()
 
-df = st.session_state.df
+# --------------------------------------------------------
+# SHOW/HIDE TABLE STATE
+# The table stays hidden until "Afficher" is clicked once.
+# After that, it stays visible and updates live on every
+# filter change (no need to click "Afficher" again) because
+# Streamlit reruns the whole script on any widget change.
+# --------------------------------------------------------
+
+if "show_table" not in st.session_state:
+    st.session_state.show_table = False
+
+def reveal_table():
+    st.session_state.show_table = True
 
 # --------------------------------------------------------
 # WIDGET KEYS FOR THE FILTER FIELDS
@@ -91,10 +101,10 @@ def _k(name):
 
 def reset_filters():
     """Force every filter widget to be recreated with its default value
-    (Métier / Supply Chain / Statut -> 'Tous', everything else -> empty/unchecked)
-    and reset the table back to the full dataset."""
+    (Métier / Supply Chain / Statut -> 'Tous', everything else -> empty/unchecked).
+    Does NOT hide the table again — if it was visible, it stays visible,
+    now showing the full unfiltered dataset."""
     st.session_state.reset_counter += 1
-    st.session_state.filtered_df = df.copy()
 
 # --------------------------------------------------------
 # TOP NAVIGATION
@@ -303,28 +313,29 @@ with tabs[3]:
 
     with b1:
 
-        if st.button("Afficher"):
-
-            st.session_state.filtered_df = apply_filters(df)
+        # First click reveals the table. After that it's a no-op —
+        # the table is already visible and updates live on its own.
+        st.button("Afficher", on_click=reveal_table)
 
     with b2:
 
-        # Réinitialiser: wipe every filter field back to its default
-        # AND reset the displayed table to the full dataset.
+        # Réinitialiser: wipe every filter field back to its default.
+        # Table stays visible (if it already was) and now shows the
+        # full unfiltered dataset.
         st.button("Réinitialiser", on_click=reset_filters)
 
     with b3:
 
-        # Exporter: download the currently filtered table as a CSV file.
-        _export_csv = st.session_state.filtered_df.to_csv(
-            index=False
-        ).encode("utf-8-sig")
+        # Exporter: download whatever is currently displayed as CSV.
+        _export_source = apply_filters(df) if st.session_state.show_table else df.iloc[0:0]
+        _export_csv = _export_source.to_csv(index=False).encode("utf-8-sig")
 
         st.download_button(
             "Exporter",
             data=_export_csv,
             file_name="articles_export.csv",
-            mime="text/csv"
+            mime="text/csv",
+            disabled=not st.session_state.show_table
         )
 
     with b4:
@@ -334,12 +345,21 @@ with tabs[3]:
     st.divider()
 
     # ====================================================
-    # TABLE
+    # TABLE (hidden until "Afficher" is clicked once, then
+    # live-updates on every filter change)
     # ====================================================
 
-    st.data_editor(
-        st.session_state.filtered_df,
-        use_container_width=True,
-        hide_index=True,
-        height=500
-    )
+    if st.session_state.show_table:
+
+        st.session_state.filtered_df = apply_filters(df)
+
+        st.data_editor(
+            st.session_state.filtered_df,
+            use_container_width=True,
+            hide_index=True,
+            height=500
+        )
+
+    else:
+
+        st.info("Cliquez sur **Afficher** pour afficher les résultats.")
