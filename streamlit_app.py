@@ -1,155 +1,215 @@
-"""
-Run this app with:
-
-pixi run -e streamlit-app streamlit run apps/streamlit/itables_app.py
-"""
-
-from typing import Optional
-
-import pyarrow  # type: ignore
 import streamlit as st
-
-from itables.typing import Unpack
-
-try:
-    from st_aggrid import AgGrid  # type: ignore
-except ImportError as e:
-    import_error = e
-
-    class AgGrid:
-        def __init__(self, *args, **kwargs):  # type: ignore
-            raise import_error
-
-
-from streamlit.errors import StreamlitAPIException
-
-import itables
-from itables.streamlit import interactive_table
+import pandas as pd
 
 st.set_page_config(
-    page_title="ITables in Streamlit",
-    page_icon="https://raw.githubusercontent.com/mwouts/itables/main/src/itables/logo/loading.svg",
-)
-st.logo(
-    "https://raw.githubusercontent.com/mwouts/itables/main/src/itables/logo/logo.svg",
-    link="https://mwouts.github.io/itables/streamlit.html",
-)
-st.markdown(
-    "![ITables](https://raw.githubusercontent.com/mwouts/itables/main/src/itables/logo/wide.svg)"
-)
-st.sidebar.markdown(
-    """
-                    # ITables in Streamlit
-                    ![Stars](https://img.shields.io/github/stars/mwouts/itables)
-                    """
-)
-st.sidebar.caption(f"ITables version: {itables.__version__}")
-
-caption = st.sidebar.text_input("Caption", value="Countries")
-select = st.sidebar.toggle("Row selection", value=True)
-classes = st.sidebar.multiselect(
-    "Classes",
-    options=["display", "nowrap", "compact", "cell-border", "stripe"],
-    default=itables.javascript.get_expanded_classes(itables.options.classes),
-)
-buttons = st.sidebar.multiselect(
-    "Buttons",
-    options=["pageLength", "copyHtml5", "csvHtml5", "excelHtml5", "colvis"],
-    default=["copyHtml5", "csvHtml5", "excelHtml5", "colvis"],
+    page_title="Infocentre",
+    layout="wide",
 )
 
-style = st.sidebar.text_input(
-    "Style", value=itables.javascript.get_compact_style(itables.options.style)
-)
+# -------------------------------------------------------
+# HEADER
+# -------------------------------------------------------
 
-render_with = st.sidebar.selectbox(
-    "Render with", ["st.dataframe", "streamlit-aggrid", "itables"], index=2
-)
+st.title("Infocentre")
 
-include_html = st.sidebar.checkbox("Include HTML")
-df = itables.sample_dfs.get_countries(html=include_html)
+# -------------------------------------------------------
+# TOP NAVIGATION
+# -------------------------------------------------------
 
-it_args: itables.ITableOptions = {}
-if select:
-    it_args["select"] = True
-    it_args["selected_rows"] = [0, 1, 2, 100, 207]
-if classes != itables.javascript.get_expanded_classes(itables.options.classes):
-    it_args["classes"] = classes
-if style != itables.options.style:
-    it_args["style"] = style
+tabs = st.tabs([
+    "Menu",
+    "Liste des rapports",
+    "Article - Emballage",
+    "Article - Liste des Coloris / Taille",
+    "Article - Fournisseur",
+])
 
-if buttons:
-    it_args["buttons"] = buttons
+with tabs[3]:
 
-if render_with == "st.dataframe":
+    # -------------------------------------------------------
+    # REPORT HEADER
+    # -------------------------------------------------------
 
-    def render_table(df, key: str, caption: Optional[str], **not_used):  # type: ignore
-        return st.dataframe(df, key=key)  # type: ignore
+    c1, c2, c3 = st.columns([4,1,2])
 
-    snippet = """st.dataframe(df)
-"""
+    with c1:
+        st.text_input(
+            "Rapport",
+            value="Rapport n°646 : Article - Liste des Coloris / Taille",
+            disabled=True
+        )
 
-elif render_with == "streamlit-aggrid":
+    with c2:
+        st.selectbox(
+            "Vue",
+            ["Initiale"],
+        )
 
-    def render_table(df, key: str, caption: Optional[str], **not_used):  # type: ignore
-        return AgGrid(df, key=key)  # type: ignore
+    with c3:
+        st.write("")
+        st.write("")
+        st.button("Modification", use_container_width=True)
 
-    snippet = """from st_aggrid import AgGrid
-
-AgGrid(df, key=None)
-"""
-else:
-    formatted_args = ["df"] + [
-        f"{key}='{value}'" if isinstance(value, str) else f"{key}={value}"
-        for key, value in it_args.items()
-    ]
-    formatted_args = ",\n                  ".join(formatted_args)
-
-    def render_table(
-        df: itables.DataFrameOrSeries,
-        key: str,
-        caption: Optional[str],
-        **it_args: Unpack[itables.ITableOptions],
-    ):
-        return interactive_table(df, key=key, caption=caption, **it_args)
-
-    snippet = f"""from itables.streamlit import interactive_table
-
-interactive_table(df, caption='{caption}', {formatted_args})
-"""
-
-st.markdown(
-    f"""```python
-{snippet}
-```
-"""
-)
-
-t = render_table(df, caption=caption, key="my_table", **it_args)
-
-if render_with == "itables":
-    st.header("Table state")
     st.markdown(
-        """The value returned by `interactive_table` is
-    a dict that contains the index of the selected rows:"""
+        "<h3 style='text-align:center'>Liste des articles - Coloris - Taille</h3>",
+        unsafe_allow_html=True,
     )
-    st.write(t)  # type: ignore
 
-st.header("More sample dataframes")
-test_dfs = itables.sample_dfs.get_dict_of_test_dfs()
-tabs = st.tabs(list(test_dfs.keys()))
+    # -------------------------------------------------------
+    # GENERAL / COLORIS
+    # -------------------------------------------------------
 
-for (name, df), tab in zip(test_dfs.items(), tabs):
-    with tab:
-        try:
-            render_table(df, caption=None, key=name)
-        except (
-            # ITables
-            NotImplementedError,
-            # st.dataframe
-            ValueError,
-            # streamlit-aggrid
-            pyarrow.lib.ArrowInvalid,  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]
-            StreamlitAPIException,
-        ) as e:  # pyright: ignore[reportUnknownVariableType]
-            st.warning(e)  # pyright: ignore[reportUnknownArgumentType]
+    general_tab, coloris_tab = st.tabs(["Général", "Coloris"])
+
+    with general_tab:
+
+        left, middle, right = st.columns([3,3,3])
+
+        # ---------------- LEFT ----------------
+
+        with left:
+
+            st.selectbox(
+                "Métier",
+                [
+                    "M - ART DE VIVRE",
+                    "TEXTILE",
+                    "CHAUSSURES"
+                ]
+            )
+
+            st.text_input("Code Coloris")
+
+            st.text_input("Code Matière Principale")
+
+            st.selectbox(
+                "Modèle Supply Chain",
+                [
+                    "Tous",
+                    "A DEFINIR",
+                    "Collection",
+                ]
+            )
+
+        # ---------------- MIDDLE ----------------
+
+        with middle:
+
+            st.text_input("Code Article (SKU)")
+
+            st.text_input("Libellé Coloris")
+
+            st.text_input("Famille")
+
+        # ---------------- RIGHT ----------------
+
+        with right:
+
+            st.text_input("Libellé Article")
+
+            st.radio(
+                "Statut Article-Coloris",
+                ["Actif", "Inactif"],
+                horizontal=True,
+            )
+
+            st.columns(2)
+
+            c1, c2 = st.columns(2)
+
+            with c1:
+                st.checkbox("Pod-New (O/N)")
+
+            with c2:
+                st.checkbox("Nouveauté SKU (O/N)")
+
+            st.text_input("Code Podium")
+
+    with coloris_tab:
+        st.info("Coloris tab interface goes here.")
+
+    st.divider()
+
+    # -------------------------------------------------------
+    # TOOLBAR
+    # -------------------------------------------------------
+
+    b1, b2, b3, b4 = st.columns([1.6,1,1,1.5])
+
+    with b1:
+        st.button("Afficher la requête SQL", use_container_width=True)
+
+    with b2:
+        st.button("Afficher", type="primary", use_container_width=True)
+
+    with b3:
+        st.button("Exporter", use_container_width=True)
+
+    with b4:
+        st.button("Sauvegarder la vue", use_container_width=True)
+
+    st.divider()
+
+    # -------------------------------------------------------
+    # GRID TOOLBAR
+    # -------------------------------------------------------
+
+    g1, g2, g3 = st.columns(3)
+
+    g1.button("Trier", use_container_width=True)
+    g2.button("Filtrer", use_container_width=True)
+    g3.button("Personnaliser", use_container_width=True)
+
+    st.divider()
+
+    # -------------------------------------------------------
+    # SAMPLE TABLE
+    # -------------------------------------------------------
+
+    data = pd.DataFrame(
+        {
+            "Métier": ["M", "M", "M"],
+            "Code SKU": [
+                "000091MR00",
+                "000099MR00",
+                "000109MR00",
+            ],
+            "Réf Article": [
+                "000091MR",
+                "000099MR",
+                "000109MR",
+            ],
+            "Code Coloris": [
+                "00",
+                "00",
+                "00",
+            ],
+            "Libellé Coloris": [
+                "",
+                "",
+                "",
+            ],
+            "Libellé Français": [
+                "REPARATION NON REFERENCEE",
+                "REPARATION ART DE VIVRE",
+                "REMPLACEMENT BALEINE",
+            ],
+            "Supply Chain": [
+                "A DEFINIR",
+                "A DEFINIR",
+                "A DEFINIR",
+            ],
+            "Produit": [
+                "M981",
+                "M981",
+                "M981",
+            ],
+        }
+    )
+
+    st.data_editor(
+        data,
+        use_container_width=True,
+        hide_index=True,
+        height=450,
+    )
