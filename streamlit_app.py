@@ -291,7 +291,7 @@ with tabs[3]:
 
         if statut != "Tous":
             filtered = filtered[
-                filtered["Statut"] == statut
+                filtered["STATUT"] == statut
             ]
 
         return filtered
