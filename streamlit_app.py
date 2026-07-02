@@ -54,95 +54,22 @@ st.markdown(
 # SAMPLE DATABASE
 # --------------------------------------------------------
 
+@st.cache_data(ttl=300)
+def load_articles():
+    conn = st.connection("snowflake")
+    df = conn.query(
+        """
+        SELECT *
+        FROM INFOCENTRE_DB.PUBLIC.ARTICLES
+        """,
+        ttl=300
+    )
+    return df
+
 if "df" not in st.session_state:
+    st.session_state.df = load_articles()
 
-    st.session_state.df = pd.DataFrame({
-        "Métier": [
-            "M","M","M","TEXTILE","TEXTILE","CHAUSSURES"
-        ],
-
-        "Code SKU": [
-            "000091MR00",
-            "000099MR00",
-            "000109MR00",
-            "TX0001",
-            "TX0002",
-            "SH0001"
-        ],
-
-        "Réf Article":[
-            "000091MR",
-            "000099MR",
-            "000109MR",
-            "TX0001",
-            "TX0002",
-            "SH0001"
-        ],
-
-        "Code Coloris":[
-            "00",
-            "01",
-            "02",
-            "BL",
-            "BK",
-            "WH"
-        ],
-
-        "Libellé Article":[
-            "Réparation non référencée",
-            "Réparation Art de vivre",
-            "Remplacement Baleine",
-            "Chemise Oxford",
-            "Pantalon Chino",
-            "Sneakers"
-        ],
-
-        "Libellé Coloris":[
-            "Noir",
-            "Rouge",
-            "Bleu",
-            "Blanc",
-            "Noir",
-            "Blanc"
-        ],
-
-        "Famille":[
-            "SAV",
-            "SAV",
-            "SAV",
-            "Homme",
-            "Homme",
-            "Chaussures"
-        ],
-
-        "Supply Chain":[
-            "A DEFINIR",
-            "Collection",
-            "Collection",
-            "Stock",
-            "Stock",
-            "Collection"
-        ],
-
-        "Produit":[
-            "M981",
-            "M981",
-            "M981",
-            "TX100",
-            "TX200",
-            "SH100"
-        ],
-
-        "Statut":[
-            "Actif",
-            "Actif",
-            "Inactif",
-            "Actif",
-            "Actif",
-            "Inactif"
-        ]
-    })
-
+df = st.session_state.df
 if "filtered_df" not in st.session_state:
     st.session_state.filtered_df = st.session_state.df.copy()
 
