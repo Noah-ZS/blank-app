@@ -72,11 +72,11 @@ st.markdown(
 
     .font-serif { font-family: 'Fraunces', serif; }
 
-    section.main .block-container {
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 2.2rem 3rem 4rem 3rem;
-    }
+section.main .block-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 3rem 4rem 3rem; /* Changed top padding to 0 */
+}
 
     /* ---------------- SIDEBAR ---------------- */
 
