@@ -78,6 +78,13 @@ section.main .block-container {
     padding: 0 3rem 4rem 3rem; /* Changed top padding to 0 */
 }
 
+[data-testid="stHeader"] {
+    display: none;
+}
+div.block-container {
+    padding-top: 1rem !important;
+}
+
     /* ---------------- SIDEBAR ---------------- */
 
     section[data-testid="stSidebar"] {
