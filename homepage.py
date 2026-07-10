@@ -361,7 +361,7 @@ with left_col:
         </div>
         """
 
-st.markdown(
+    st.markdown(
         f"""
         <div class="panel">
             <div class="panel-header">
@@ -370,7 +370,6 @@ st.markdown(
             </div>
             <div class="panel-divider"></div>
             {rows_html}
-            <div class="panel-footer">Accéder à la liste des rapports """ + ICON_CHEVRON_RIGHT + """</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -390,7 +389,7 @@ with right_col:
         </div>
         """
 
-st.markdown(
+    st.markdown(
         f"""
         <div class="panel">
             <div class="panel-header">
@@ -399,7 +398,6 @@ st.markdown(
             </div>
             <div class="panel-divider"></div>
             {rows_html}
-            <div class="panel-footer">Gérer vos favoris """ + ICON_CHEVRON_RIGHT + """</div>
         </div>
         """,
         unsafe_allow_html=True,
