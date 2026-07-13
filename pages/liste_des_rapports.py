@@ -6,6 +6,9 @@ from common import (
     ICON_LIST_VIEW, ICON_GRID_VIEW, ICON_SETTINGS, ICON_KEBAB
 )
 
+# ------------------------------------------------------------
+# PAGE INITIALIZATION & TOPBAR
+# ------------------------------------------------------------
 render_topbar("Production M3 13.4")
 
 st.markdown('<div class="page-title font-serif">Liste des rapports</div>', unsafe_allow_html=True)
@@ -15,10 +18,9 @@ st.markdown(
 )
 
 # ============================================================
-# SEARCH ROW
+# SEARCH & FILTERS BAR (Cleaned Row Layout)
 # ============================================================
-
-search_col, btn_col, spacer_col, fav_col = st.columns([5, 1, 3, 1.4])
+search_col, btn_col, fav_col = st.columns([6, 1.5, 2], gap="small")
 
 with search_col:
     st.text_input(
@@ -29,19 +31,16 @@ with search_col:
     )
 
 with btn_col:
-    st.markdown('<div class="lr-search-btn">', unsafe_allow_html=True)
     st.button("Rechercher", key="report_search_btn", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with fav_col:
-    st.button(f"☆  Mes favoris", key="mes_favoris_btn", use_container_width=True)
+    st.button("☆  Mes favoris", key="mes_favoris_btn", use_container_width=True)
 
-st.markdown('<div style="height:22px;"></div>', unsafe_allow_html=True)
+st.markdown('<div style="height:20px;"></div>', unsafe_allow_html=True)
 
 # ============================================================
-# MOCK DATA — REPORTS TABLE
+# MOCK DATA
 # ============================================================
-
 reports = pd.DataFrame([
     {"titre": "Mesures des Nouveaux Produits", "desc": "Suivi des mesures et performances produits",
      "numero": 1722, "dossier": "Logistique - Infolog", "proprietaire": "J. Martin",
@@ -88,15 +87,12 @@ REPERTOIRE_TREE = [
 ]
 
 # ============================================================
-# LAYOUT: REPERTOIRES (left) + TABLE (right)
+# MAIN LAYOUT: REPERTOIRES (left) + CONTENT TABLE (right)
 # ============================================================
+left_col, right_col = st.columns([1.2, 3.8], gap="large")
 
-left_col, right_col = st.columns([1.15, 3.4], gap="medium")
-
-# ---------------- LEFT: REPERTOIRES ----------------
-
+# ---------------- LEFT PANEL: REPERTOIRES ----------------
 with left_col:
-
     st.markdown('<div class="repertoire-panel">', unsafe_allow_html=True)
     st.markdown('<div class="repertoire-title font-serif">Répertoires</div>', unsafe_allow_html=True)
 
@@ -107,7 +103,7 @@ with left_col:
         key="folder_search"
     )
 
-    st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
+    st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
 
     tree_html = ""
     for item in REPERTOIRE_TREE:
@@ -142,22 +138,17 @@ with left_col:
     )
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------- RIGHT: REPORTS TABLE ----------------
 
+# ---------------- RIGHT PANEL: REPORTS TABLE ----------------
 with right_col:
-
-    count_col, filt_col, sort_label_col, sort_col, view1_col, view2_col = st.columns(
-        [3, 1.1, 0.9, 1.5, 0.55, 0.55]
-    )
+    # Sub-header controls row
+    count_col, filt_col, sort_col, view_col = st.columns([3, 1.2, 2.5, 1])
 
     with count_col:
-        st.markdown(f'<div class="rl-count">{len(reports)} rapports</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="rl-count" style="line-height: 38px;">{len(reports)} rapports</div>', unsafe_allow_html=True)
 
     with filt_col:
-        st.button(f"▽  Filtres", key="filters_btn", use_container_width=True)
-
-    with sort_label_col:
-        st.markdown('<div style="padding-top:6px; font-size:13px; color:#6E6A63;">Trier par</div>', unsafe_allow_html=True)
+        st.button("▽  Filtres", key="filters_btn", use_container_width=True)
 
     with sort_col:
         st.selectbox(
@@ -165,67 +156,64 @@ with right_col:
             label_visibility="collapsed", key="sort_select"
         )
 
-    with view1_col:
+    with view_col:
         st.markdown(
-            f'<div class="pill-btn active" style="padding:8px 10px;">{ICON_LIST_VIEW}</div>',
+            f"""
+            <div style="display: flex; gap: 4px; justify-content: flex-end; padding-top: 4px;">
+                <div class="pill-btn active" style="padding:8px 10px; cursor: pointer;">{ICON_LIST_VIEW}</div>
+                <div class="pill-btn" style="padding:8px 10px; cursor: pointer;">{ICON_GRID_VIEW}</div>
+            </div>
+            """,
             unsafe_allow_html=True
         )
 
-    with view2_col:
-        st.markdown(
-            f'<div class="pill-btn" style="padding:8px 10px;">{ICON_GRID_VIEW}</div>',
-            unsafe_allow_html=True
-        )
+    st.markdown('<div style="height:12px;"></div>', unsafe_allow_html=True)
 
-    st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
-
+    # Clean HTML Structured Table Header explicitly containing all 8 target columns
     st.markdown(
         f"""
-        <div class="rl-table-header">
-            <div>Rapport</div>
-            <div>Numéro</div>
-            <div>Dossier</div>
-            <div>Propriétaire</div>
-            <div>Dernière modif.</div>
-            <div>Utilisations {ICON_INFO}</div>
-            <div></div>
-            <div></div>
+        <div class="rl-table-header" style="display: flex; font-weight: 600; border-bottom: 2px solid #EAE8E4; padding-bottom: 8px; color: #6E6A63; font-size: 13px;">
+            <div style="flex: 3.5;">Rapport</div>
+            <div style="flex: 1; text-align: left;">Numéro</div>
+            <div style="flex: 2.5;">Dossier</div>
+            <div style="flex: 1.5;">Propriétaire</div>
+            <div style="flex: 1.5;">Dernière modif.</div>
+            <div style="flex: 1; text-align: right;">Utilisations</div>
+            <div style="width: 40px;"></div>
+            <div style="width: 40px;"></div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
+    # Table Row Content Layout
     rows_html = ""
     for _, r in reports.iterrows():
         star_class = "filled" if r["favori"] else ""
         title_html = r["titre"]
-        # The "Article - Liste des Coloris / Taille" row links to the
-        # real Snowflake-connected report page via st.page_link below
-        # the table (kept as a plain highlighted row here so the grid
-        # stays visually consistent; see the linked-row note underneath).
+        
         rows_html += f"""
-        <div class="rl-row">
-            <div class="rl-report-cell">
-                <div class="rl-report-icon">{ICON_DOC}</div>
+        <div class="rl-row" style="display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #F0EDE9; font-size: 14px;">
+            <div class="rl-report-cell" style="flex: 3.5; display: flex; gap: 10px; align-items: flex-start;">
+                <div class="rl-report-icon" style="margin-top: 2px;">{ICON_DOC}</div>
                 <div>
-                    <div class="rl-report-title">{title_html}</div>
-                    <div class="rl-report-desc">{r['desc']}</div>
+                    <div class="rl-report-title" style="font-weight: 500; color: #1A1A1A;">{title_html}</div>
+                    <div class="rl-report-desc" style="font-size: 12px; color: #8C8881;">{r['desc']}</div>
                 </div>
             </div>
-            <div class="rl-cell">{r['numero']}</div>
-            <div class="rl-cell">{r['dossier']}</div>
-            <div class="rl-cell">{r['proprietaire']}</div>
-            <div class="rl-cell">{r['maj']}</div>
-            <div class="rl-cell">{r['usages']}</div>
-            <div class="rl-star {star_class}">{ICON_STAR}</div>
-            <div class="rl-kebab">{ICON_KEBAB}</div>
+            <div class="rl-cell" style="flex: 1; color: #4A4640;">{r['numero']}</div>
+            <div class="rl-cell" style="flex: 2.5; color: #4A4640; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{r['dossier']}</div>
+            <div class="rl-cell" style="flex: 1.5; color: #4A4640;">{r['proprietaire']}</div>
+            <div class="rl-cell" style="flex: 1.5; color: #4A4640;">{r['maj']}</div>
+            <div class="rl-cell" style="flex: 1; text-align: right; color: #4A4640; padding-right: 5px;">{r['usages']}</div>
+            <div class="rl-star {star_class}" style="width: 40px; text-align: center; cursor: pointer; color: #C2BFBA;">{ICON_STAR}</div>
+            <div class="rl-kebab" style="width: 40px; text-align: center; cursor: pointer; color: #C2BFBA;">{ICON_KEBAB}</div>
         </div>
         """
 
     st.markdown(rows_html, unsafe_allow_html=True)
 
-    # Real, working navigation into the Snowflake-connected report,
-    # for the row that corresponds to an actual page in this app.
+    # Standard Page Navigation Link
     linked_row = reports[reports["page"] == "article_coloris"].iloc[0]
     st.page_link(
         "pages/article_coloris.py",
@@ -233,31 +221,30 @@ with right_col:
         icon=":material/open_in_new:",
     )
 
-    st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
+    st.markdown('<div style="height:20px;"></div>', unsafe_allow_html=True)
 
-    # ---------------- FOOTER: PAGE SIZE + PAGINATION ----------------
-
+    # ---------------- FOOTER: PAGINATION ----------------
     foot_left, foot_right = st.columns([2, 3])
 
     with foot_left:
-        pp_label, pp_select = st.columns([2, 1])
+        pp_label, pp_select = st.columns([2, 1.2])
         with pp_label:
-            st.markdown('<div style="padding-top:6px; font-size:13.5px; color:#4A4640;">Afficher</div>', unsafe_allow_html=True)
+            st.markdown('<div style="padding-top:6px; font-size:13.5px; color:#4A4640; text-align: right; padding-right: 10px;">Afficher</div>', unsafe_allow_html=True)
         with pp_select:
             st.selectbox("Résultats par page", ["25", "50", "100"], label_visibility="collapsed", key="page_size")
 
     with foot_right:
         st.markdown(
             f"""
-            <div class="pagination-row" style="justify-content:flex-end;">
-                <div class="page-pill">‹</div>
-                <div class="page-pill current">1</div>
-                <div class="page-pill">2</div>
-                <div class="page-pill">3</div>
-                <div class="page-pill">4</div>
-                <div class="page-pill">5</div>
-                <div class="page-pill">…</div>
-                <div class="page-pill">›</div>
+            <div class="pagination-row" style="display: flex; justify-content: flex-end; gap: 4px; padding-top: 4px;">
+                <div class="page-pill" style="padding: 6px 12px; border: 1px solid #EAE8E4; border-radius: 4px; cursor: pointer; font-size: 13px;">‹</div>
+                <div class="page-pill current" style="padding: 6px 12px; background-color: #1A1A1A; color: white; border-radius: 4px; font-size: 13px; font-weight: 600;">1</div>
+                <div class="page-pill" style="padding: 6px 12px; border: 1px solid #EAE8E4; border-radius: 4px; cursor: pointer; font-size: 13px;">2</div>
+                <div class="page-pill" style="padding: 6px 12px; border: 1px solid #EAE8E4; border-radius: 4px; cursor: pointer; font-size: 13px;">3</div>
+                <div class="page-pill" style="padding: 6px 12px; border: 1px solid #EAE8E4; border-radius: 4px; cursor: pointer; font-size: 13px;">4</div>
+                <div class="page-pill" style="padding: 6px 12px; border: 1px solid #EAE8E4; border-radius: 4px; cursor: pointer; font-size: 13px;">5</div>
+                <div class="page-pill" style="padding: 6px 12px; color: #8C8881; font-size: 13px;">…</div>
+                <div class="page-pill" style="padding: 6px 12px; border: 1px solid #EAE8E4; border-radius: 4px; cursor: pointer; font-size: 13px;">›</div>
             </div>
             """,
             unsafe_allow_html=True,
