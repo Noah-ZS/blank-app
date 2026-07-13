@@ -88,7 +88,6 @@ with left_col:
             </div>
             <div class="panel-divider"></div>
             {rows_html}
-            <div class="panel-footer">Accéder à la liste des rapports {ICON_CHEVRON_RIGHT}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -116,7 +115,6 @@ with right_col:
             </div>
             <div class="panel-divider"></div>
             {rows_html}
-            <div class="panel-footer">Gérer vos favoris {ICON_CHEVRON_RIGHT}</div>
         </div>
         """,
         unsafe_allow_html=True,
