@@ -57,23 +57,17 @@ st.markdown(
     }
 
     /* ---- Report table: tighter row height ---- */
-    .st-key-rl_table_rows [data-testid="stVerticalBlock"] {
-        gap: 0.3rem !important;
-    }
+    /* Only tighten spacing AROUND each row (divider + column padding).
+       Deliberately not touching .rl-report-title / .rl-report-desc or
+       the inner vertical-block gap, since those are calibrated together
+       with a negative margin elsewhere in the stylesheet — shrinking
+       that gap independently pulls the description up onto the title. */
     .st-key-rl_table_rows hr {
-        margin: 2px 0 !important;
+        margin: 6px 0 !important;
     }
     .st-key-rl_table_rows [data-testid="column"] {
-        padding-top: 4px !important;
-        padding-bottom: 4px !important;
-    }
-    .st-key-rl_table_rows .rl-report-title {
-        margin-bottom: 0px;
-        line-height: 1.25;
-    }
-    .st-key-rl_table_rows .rl-report-desc {
-        margin-top: 1px;
-        line-height: 1.2;
+        padding-top: 6px !important;
+        padding-bottom: 6px !important;
     }
     </style>
     """,
