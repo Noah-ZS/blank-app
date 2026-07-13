@@ -18,12 +18,14 @@ st.markdown(
 # SEARCH ROW
 # ============================================================
 
-search_col, btn_col, spacer_col, fav_col = st.columns([5, 1, 3, 1.4])
+# Search bar shortened: search_col ratio reduced (was 5), spacer_col
+# increased to absorb the freed width so the button/favoris stay put.
+search_col, btn_col, spacer_col, fav_col = st.columns([3, 1, 5, 1.4])
 
 with search_col:
     st.text_input(
         "Recherche",
-        placeholder="Rechercher un rapport par nom, numéro ou mot-clé...",
+        placeholder="Rechercher un rapport...",
         label_visibility="collapsed",
         key="report_search"
     )
@@ -179,15 +181,14 @@ with right_col:
 
     st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
 
+    # Header: "Propriétaire", "Dernière modif." and "Utilisations" columns
+    # removed. Only Rapport / Numéro / Dossier + the two action cells remain.
     st.markdown(
         f"""
-        <div class="rl-table-header">
+        <div class="rl-table-header rl-table-header-compact">
             <div>Rapport</div>
             <div>Numéro</div>
             <div>Dossier</div>
-            <div>Propriétaire</div>
-            <div>Dernière modif.</div>
-            <div>Utilisations {ICON_INFO}</div>
             <div></div>
             <div></div>
         </div>
@@ -204,7 +205,7 @@ with right_col:
         # the table (kept as a plain highlighted row here so the grid
         # stays visually consistent; see the linked-row note underneath).
         rows_html += f"""
-        <div class="rl-row">
+        <div class="rl-row rl-row-compact">
             <div class="rl-report-cell">
                 <div class="rl-report-icon">{ICON_DOC}</div>
                 <div>
@@ -214,9 +215,6 @@ with right_col:
             </div>
             <div class="rl-cell">{r['numero']}</div>
             <div class="rl-cell">{r['dossier']}</div>
-            <div class="rl-cell">{r['proprietaire']}</div>
-            <div class="rl-cell">{r['maj']}</div>
-            <div class="rl-cell">{r['usages']}</div>
             <div class="rl-star {star_class}">{ICON_STAR}</div>
             <div class="rl-kebab">{ICON_KEBAB}</div>
         </div>
