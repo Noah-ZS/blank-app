@@ -68,7 +68,9 @@ def inject_global_css():
             --success: #1E8A5F;
         }
 
-        #MainMenu, footer, header[data-testid="stHeader"] { visibility: hidden; height: 0; }
+        #MainMenu, footer { visibility: hidden; height: 0; }
+        header[data-testid="stHeader"] { display: none; }
+        div[data-testid="stDecoration"] { display: none; }
         .stApp { background: #FFFFFF; }
         html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: var(--ink); }
         .font-serif { font-family: 'Fraunces', serif; }
@@ -76,7 +78,7 @@ def inject_global_css():
         section.main .block-container {
             max-width: 1320px;
             margin: 0 auto;
-            padding: 2.0rem 3rem 4rem 3rem;
+            padding: 1.2rem 3rem 4rem 3rem;
         }
 
         /* ---------------- SIDEBAR ---------------- */
@@ -167,18 +169,9 @@ def inject_global_css():
 
         /* ---------------- LISTE DES RAPPORTS ---------------- */
 
-        /* Align the search row (input + button) on the same vertical center,
-           regardless of each widget's own default height. */
-        div[data-testid="stHorizontalBlock"]:has(.lr-search-btn) {
-            align-items: center;
-        }
-        div[data-testid="stTextInput"] input {
-            height: 44px;
-        }
         .lr-search-btn button {
             background: var(--accent) !important; color: white !important;
             border: none !important; font-weight: 600 !important;
-            height: 44px !important; margin: 0 !important;
         }
         .lr-search-btn button:hover { background: #C15720 !important; }
 
@@ -198,13 +191,13 @@ def inject_global_css():
 
         .rl-table-header {
             display: grid;
-            grid-template-columns: minmax(240px,3fr) 90px minmax(150px,1.6fr) 34px 26px;
+            grid-template-columns: minmax(260px,3fr) 90px minmax(220px,2fr) 34px 26px;
             gap: 10px; padding: 0 4px 10px 4px; border-bottom: 1px solid var(--line);
             font-size: 12.5px; font-weight: 600; color: var(--ink-soft);
         }
         .rl-row {
             display: grid;
-            grid-template-columns: minmax(240px,3fr) 90px minmax(150px,1.6fr) 34px 26px;
+            grid-template-columns: minmax(260px,3fr) 90px minmax(220px,2fr) 34px 26px;
             gap: 10px; padding: 14px 4px; border-bottom: 1px solid var(--line);
             align-items: center;
         }
