@@ -451,38 +451,38 @@ else:
     for _, report in reports.iterrows():
         render_row(report)
 
-        # ---------------- FOOTER: PAGE SIZE + PAGINATION ----------------
+# ---------------- FOOTER: PAGE SIZE + PAGINATION ----------------
 
-        foot_left, foot_right = st.columns([2, 3])
+foot_left, foot_right = st.columns([2, 3])
 
-        with foot_left:
-            pp_label, pp_select = st.columns([2, 1])
-            with pp_label:
-                st.markdown(
-                    '<div style="padding-top:6px; font-size:13.5px; color:#4A4640;">Afficher</div>',
-                    unsafe_allow_html=True,
-                )
-            with pp_select:
-                st.selectbox(
-                    "Résultats par page",
-                    ["25", "50", "100"],
-                    label_visibility="collapsed",
-                    key="page_size",
-                )
+with foot_left:
+    pp_label, pp_select = st.columns([2, 1])
+    with pp_label:
+        st.markdown(
+            '<div style="padding-top:6px; font-size:13.5px; color:#4A4640;">Afficher</div>',
+            unsafe_allow_html=True,
+        )
+    with pp_select:
+        st.selectbox(
+            "Résultats par page",
+            ["25", "50", "100"],
+            label_visibility="collapsed",
+            key="page_size",
+        )
 
-        with foot_right:
-            st.markdown(
-                """
-                <div class="pagination-row" style="justify-content:flex-end;">
-                    <div class="page-pill">‹</div>
-                    <div class="page-pill current">1</div>
-                    <div class="page-pill">2</div>
-                    <div class="page-pill">3</div>
-                    <div class="page-pill">4</div>
-                    <div class="page-pill">5</div>
-                    <div class="page-pill">…</div>
-                    <div class="page-pill">›</div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+with foot_right:
+    st.markdown(
+        """
+        <div class="pagination-row" style="justify-content:flex-end;">
+            <div class="page-pill">‹</div>
+            <div class="page-pill current">1</div>
+            <div class="page-pill">2</div>
+            <div class="page-pill">3</div>
+            <div class="page-pill">4</div>
+            <div class="page-pill">5</div>
+            <div class="page-pill">…</div>
+            <div class="page-pill">›</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
