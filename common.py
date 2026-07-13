@@ -1,5 +1,11 @@
 """
-Shared building blocks for the Infocentre multi-page app...
+Shared building blocks for the Infocentre multi-page app:
+icons, global CSS/design tokens, the custom sidebar + top bar,
+the Snowflake data loader, and the Gmail sending helper.
+
+Imported by streamlit_app.py (the router) and by every page in
+pages/. Do NOT call st.set_page_config() here — only the router
+may call it, and only once.
 """
 
 import smtplib
@@ -12,7 +18,9 @@ from email.mime.text import MIMEText
 import streamlit as st
 
 # ============================================================
-# ICONS  (unchanged)
+# ICONS
+# Small inline SVGs (Lucide-style outline icons), no external
+# icon-font dependency. Each accepts currentColor.
 # ============================================================
 
 def icon(path, size=18, stroke_width=1.8):
@@ -91,6 +99,7 @@ def inject_global_css():
             color: var(--accent); margin-bottom: 22px;
         }
 
+        /* Style native st.page_link anchors to look like our nav items */
         section[data-testid="stSidebar"] a[data-testid^="stPageLink"] {
             display: flex; align-items: center; gap: 10px;
             padding: 9px 12px !important; border-radius: 8px;
@@ -113,32 +122,6 @@ def inject_global_css():
         .logout-row {
             display: flex; align-items: center; gap: 10px;
             color: #57534A; font-size: 14px; font-weight: 500; margin-top: 16px;
-        }
-
-        /* ---- Dynamic in-app tabs, inserted under a sidebar nav item ---- */
-        [class*="st-key-dyntab_"] {
-            margin-left: 14px;
-            margin-bottom: 2px;
-        }
-        [class*="st-key-dyntab_"] .stButton button {
-            justify-content: flex-start !important;
-            text-align: left !important;
-            padding: 7px 10px !important;
-            border-radius: 8px !important;
-            font-size: 13.5px !important;
-            font-weight: 500 !important;
-        }
-        [class*="st-key-dynclose_"] .stButton button {
-            padding: 4px 8px !important;
-            min-height: unset !important;
-            border: none !important;
-            background: transparent !important;
-            color: #A39D91 !important;
-            font-size: 12px !important;
-        }
-        [class*="st-key-dynclose_"] .stButton button:hover {
-            color: var(--accent) !important;
-            background: #F1EEE7 !important;
         }
 
         /* ---------------- MAIN TOP BAR ---------------- */
@@ -204,17 +187,15 @@ def inject_global_css():
 
         .rl-count { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; color: var(--ink); }
 
-        /* Trimmed to 5 columns: Rapport / Numéro / Dossier / star / kebab
-           (propriétaire, dernière modif., utilisations removed) */
         .rl-table-header {
             display: grid;
-            grid-template-columns: minmax(280px,4fr) 90px minmax(200px,2.2fr) 34px 26px;
+            grid-template-columns: minmax(240px,3fr) 80px minmax(150px,1.3fr) 110px 100px 100px 34px 26px;
             gap: 10px; padding: 0 4px 10px 4px; border-bottom: 1px solid var(--line);
             font-size: 12.5px; font-weight: 600; color: var(--ink-soft);
         }
         .rl-row {
             display: grid;
-            grid-template-columns: minmax(280px,4fr) 90px minmax(200px,2.2fr) 34px 26px;
+            grid-template-columns: minmax(240px,3fr) 80px minmax(150px,1.3fr) 110px 100px 100px 34px 26px;
             gap: 10px; padding: 14px 4px; border-bottom: 1px solid var(--line);
             align-items: center;
         }
@@ -227,18 +208,6 @@ def inject_global_css():
         .rl-star { color: #C9C4B8; }
         .rl-star.filled { color: var(--accent); }
         .rl-kebab { color: #B4AFA6; }
-
-        /* Overlay click target for the "open as in-app tab" row.
-           Pairs with st.container(key=f"clickrow_{numero}") in the page. */
-        [class*="st-key-clickrow_"] { position: relative; }
-        [class*="st-key-clickrow_"] .stButton {
-            position: absolute; inset: 0; margin: 0;
-        }
-        [class*="st-key-clickrow_"] .stButton button {
-            width: 100%; height: 100%;
-            opacity: 0; cursor: pointer;
-            border: none; padding: 0; margin: 0;
-        }
 
         .pill-btn {
             display: inline-flex; align-items: center; justify-content: center;
@@ -263,18 +232,8 @@ def inject_global_css():
 # SHARED CHROME: SIDEBAR + TOP BAR
 # ============================================================
 
-def render_sidebar(nav_items, dynamic_tabs_after="Liste des rapports"):
-    """nav_items: list of dicts {"page": st.Page, "label": str, "icon": str}
-
-    Any tabs in st.session_state.dynamic_tabs are rendered directly under
-    the nav item whose label matches `dynamic_tabs_after`, each with a
-    close (✕) button. Pages open/close tabs by writing to
-    st.session_state.dynamic_tabs / active_dynamic_tab — this function
-    only renders whatever state currently holds.
-    """
-    dynamic_tabs = st.session_state.get("dynamic_tabs", [])
-    active_tab_key = st.session_state.get("active_dynamic_tab")
-
+def render_sidebar(nav_items):
+    """nav_items: list of dicts {"page": st.Page, "label": str, "icon": str}"""
     with st.sidebar:
         try:
             st.image("image.png", width=170)
@@ -285,30 +244,6 @@ def render_sidebar(nav_items, dynamic_tabs_after="Liste des rapports"):
 
         for item in nav_items:
             st.page_link(item["page"], label=item["label"], icon=item["icon"])
-
-            if item["label"] == dynamic_tabs_after and dynamic_tabs:
-                for tab in dynamic_tabs:
-                    is_active = tab["key"] == active_tab_key
-                    with st.container(key=f"dyntab_{tab['key']}"):
-                        label_col, close_col = st.columns([5, 1], gap="small")
-                        with label_col:
-                            if st.button(
-                                tab["label"],
-                                key=f"dyntab_btn_{tab['key']}",
-                                use_container_width=True,
-                                type="primary" if is_active else "secondary",
-                            ):
-                                st.session_state.active_dynamic_tab = tab["key"]
-                                st.switch_page(tab["target_page"])
-                        with close_col:
-                            with st.container(key=f"dynclose_{tab['key']}"):
-                                if st.button("✕", key=f"dyntab_close_{tab['key']}"):
-                                    st.session_state.dynamic_tabs = [
-                                        t for t in dynamic_tabs if t["key"] != tab["key"]
-                                    ]
-                                    if st.session_state.get("active_dynamic_tab") == tab["key"]:
-                                        st.session_state.active_dynamic_tab = None
-                                    st.rerun()
 
         st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
 
@@ -339,12 +274,13 @@ def render_topbar(version_label):
 
 
 def render_placeholder_page(title, version_label="Version Production 5.2.1"):
+    """Generic stub for sidebar sections that don't have a real page yet."""
     render_topbar(version_label)
     st.markdown(f'<div class="page-title font-serif">{title}</div>', unsafe_allow_html=True)
     st.info("🚧 Cette section n'a pas encore été implémentée.")
 
 # ============================================================
-# SNOWFLAKE DATA  (unchanged)
+# SNOWFLAKE DATA (shared by pages that need the ARTICLES table)
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -360,8 +296,14 @@ def load_articles():
     return data
 
 # ============================================================
-# EMAIL SENDING  (unchanged)
+# EMAIL SENDING (Gmail SMTP)
 # ============================================================
+# Requires a Google App Password in .streamlit/secrets.toml as a
+# ROOT-LEVEL key (i.e. above any [section] header):
+#
+#   smtp_password = "xxxx xxxx xxxx xxxx"
+#
+# Generate one at: https://myaccount.google.com/apppasswords
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
