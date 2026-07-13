@@ -31,9 +31,8 @@ with search_col:
     )
 
 with btn_col:
-    st.markdown('<div class="lr-search-btn">', unsafe_allow_html=True)
-    st.button("Rechercher", key="report_search_btn", use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.container(key="search_btn_wrap"):
+        st.button("Rechercher", key="report_search_btn", use_container_width=True)
 
 with fav_col:
     st.button(f"☆  Mes favoris", key="mes_favoris_btn", use_container_width=True)
