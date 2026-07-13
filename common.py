@@ -189,13 +189,13 @@ def inject_global_css():
 
         .rl-table-header {
             display: grid;
-            grid-template-columns: minmax(240px,3fr) 80px minmax(150px,1.3fr) 110px 100px 100px 34px 26px;
+            grid-template-columns: minmax(240px,3fr) 90px minmax(150px,1.6fr) 34px 26px;
             gap: 10px; padding: 0 4px 10px 4px; border-bottom: 1px solid var(--line);
             font-size: 12.5px; font-weight: 600; color: var(--ink-soft);
         }
         .rl-row {
             display: grid;
-            grid-template-columns: minmax(240px,3fr) 80px minmax(150px,1.3fr) 110px 100px 100px 34px 26px;
+            grid-template-columns: minmax(240px,3fr) 90px minmax(150px,1.6fr) 34px 26px;
             gap: 10px; padding: 14px 4px; border-bottom: 1px solid var(--line);
             align-items: center;
         }
