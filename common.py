@@ -217,29 +217,46 @@ def inject_global_css():
         .rl-star.filled { color: var(--accent); }
         .rl-kebab { color: #B4AFA6; }
 
-        /* Invisible full-row overlay button: sits on top of a
-           preceding HTML row (via negative margin) so the whole
-           row is clickable while keeping the exact same visuals.
-           Streamlit auto-adds a `st-key-<key>` class to the
-           element wrapping a keyed widget (1.36+), which is what
-           this targets. */
-        .st-key-open_article_row_click button {
-            margin-top: -62px !important;
-            height: 62px !important;
-            width: 100% !important;
+        /* Uniform "clickable title" look applied to every report
+           row's title, whether it's a real link (st.button styled
+           to look like text) or plain text — keeps the table
+           visually consistent even though only one row currently
+           has a real target. */
+        .rl-title-link {
+            font-size: 14.5px; font-weight: 600; color: var(--ink);
+            text-decoration: none; cursor: default;
+        }
+        a.rl-title-link, .rl-title-link.is-link { cursor: pointer; }
+        a.rl-title-link:hover, .rl-title-link.is-link:hover {
+            color: var(--accent); text-decoration: underline;
+        }
+
+        /* The one real clickable title, rendered as a native
+           st.button but stripped of all button chrome so it reads
+           as plain link text inline with the row. */
+        .st-key-open_article_title_btn button {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
-            position: relative;
-            z-index: 5;
-            cursor: pointer;
+            padding: 0 !important;
+            height: auto !important;
+            min-height: 0 !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
         }
-        .st-key-open_article_row_click button p { color: transparent !important; }
-        .st-key-open_article_row_click button:hover {
-            background: #FAF6F1 !important;
-            border-radius: 8px;
+        .st-key-open_article_title_btn button p {
+            font-size: 14.5px !important;
+            font-weight: 600 !important;
+            color: var(--ink) !important;
         }
-        .st-key-open_article_row_click { margin-bottom: 0 !important; }
+        .st-key-open_article_title_btn button:hover p {
+            color: var(--accent) !important;
+            text-decoration: underline !important;
+        }
+        .st-key-open_article_title_btn { margin-bottom: 0 !important; }
+
+        .rl-th { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); padding-bottom: 8px; }
+        .rl-row-hr { border: none; border-top: 1px solid var(--line); margin: 4px 0 10px 0; }
 
         .pill-btn {
             display: inline-flex; align-items: center; justify-content: center;
