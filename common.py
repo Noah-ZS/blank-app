@@ -174,29 +174,37 @@ def inject_global_css():
         .panel-footer { display: flex; align-items: center; gap: 4px; color: var(--accent); font-size: 13.5px; font-weight: 600; padding: 14px 2px 4px 2px; }
 
         /* ---------------- LISTE DES RAPPORTS ---------------- */
+/* ---------------- LISTE DES RAPPORTS ---------------- */
 
-        .lr-search-btn button {
-            background: var(--accent) !important; color: white !important;
-            border: none !important; font-weight: 600 !important;
-        }
-        .lr-search-btn button:hover { background: #C15720 !important; }
-/* Fix vertical alignment across the search input column and button column */
+/* 1. Force the row container to center-align both columns horizontally */
 div[data-testid="stHorizontalBlock"]:has(.lr-search-btn) {
-    align-items: flex-end !important;
+    align-items: center !important;
 }
 
-/* Ensure the wrapper completely fills the column height correctly */
+/* 2. Reset your wrapper container so it acts as a clean flex item pass-through */
 .lr-search-btn {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 3. Strip any top margins Streamlit attaches to the button wrapper block */
+.lr-search-btn data-testid="stElementContainer",
+.lr-search-btn div[data-testid="element-container"] {
+    margin-top: 0 !important;
     margin-bottom: 0 !important;
 }
 
+/* 4. Keep your existing custom button styling intact */
 .lr-search-btn button {
     background: var(--accent) !important; color: white !important;
     border: none !important; font-weight: 600 !important;
+    white-space: nowrap !important;
 }
 .lr-search-btn button:hover { background: #C15720 !important; }
+
         .repertoire-panel { background: #FFFFFF; border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; }
         .repertoire-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; margin-bottom: 12px; }
         .tree-item { display: flex; align-items: center; gap: 7px; padding: 6px 4px; font-size: 13.5px; color: #4A4640; border-radius: 6px; }
