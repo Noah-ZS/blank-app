@@ -261,49 +261,64 @@ else:
             unsafe_allow_html=True,
         )
 
-        def _row_html(r):
-            star_class = "filled" if r["favori"] else ""
-            return f"""
-            <div class="rl-row">
-                <div class="rl-report-cell">
-                    <div class="rl-report-icon">{ICON_DOC}</div>
-                    <div>
-                        <div class="rl-report-title">{r['titre']}</div>
-                        <div class="rl-report-desc">{r['desc']}</div>
-                    </div>
-                </div>
-                <div class="rl-cell">{r['numero']}</div>
-                <div class="rl-cell">{r['dossier']}</div>
-                <div class="rl-star {star_class}">{ICON_STAR}</div>
-                <div class="rl-kebab">{ICON_KEBAB}</div>
-            </div>
-            """
+        def render_row(r):
+            cols = st.columns([5, 1, 3, 0.5, 0.5])
+
+            with cols[0]:
+                icon, text = st.columns([0.12, 0.88])
+
+                with icon:
+                    st.markdown(
+                        f'<div class="rl-report-icon">{ICON_DOC}</div>',
+                        unsafe_allow_html=True,
+                    )
+
+                with text:
+                    if r["page"] == "article_coloris":
+                        if st.button(
+                            r["titre"],
+                            key=f"title_{r['numero']}",
+                            type="tertiary",
+                        ):
+                            _open_article_tab()          # or st.switch_page(...)
+                    else:
+                        st.markdown(
+                            f'<div class="rl-report-title">{r["titre"]}</div>',
+                            unsafe_allow_html=True,
+                        )
+
+                    st.markdown(
+                        f'<div class="rl-report-desc">{r["desc"]}</div>',
+                        unsafe_allow_html=True,
+                    )
+
+            with cols[1]:
+                st.write(r["numero"])
+
+            with cols[2]:
+                st.write(r["dossier"])
+
+            with cols[3]:
+                st.markdown(
+                    f'<div class="rl-star">{ICON_STAR}</div>',
+                    unsafe_allow_html=True,
+                )
+
+            with cols[4]:
+                st.markdown(
+                    f'<div class="rl-kebab">{ICON_KEBAB}</div>',
+                    unsafe_allow_html=True,
+                )
+
+            st.divider()
 
         linked_idx = reports.index[reports["page"] == "article_coloris"][0]
         before_df = reports.loc[:linked_idx].iloc[:-1]
         linked_row = reports.loc[linked_idx]
         after_df = reports.loc[linked_idx:].iloc[1:]
 
-        if len(before_df):
-            st.markdown("".join(_row_html(r) for _, r in before_df.iterrows()), unsafe_allow_html=True)
-
-        # The "Article - Liste des Coloris / Taille" row: rendered
-        # with the exact same HTML as every other row, then an
-        # invisible full-width button is overlaid on top of it (see
-        # the .st-key-open_article_row_click CSS in common.py) so
-        # clicking anywhere on the row opens the in-app tab.
-        st.markdown(_row_html(linked_row), unsafe_allow_html=True)
-        st.button(
-            "Ouvrir le rapport Article - Liste des Coloris / Taille",
-            key="open_article_row_click",
-            on_click=_open_article_tab,
-            use_container_width=True,
-        )
-
-        if len(after_df):
-            st.markdown("".join(_row_html(r) for _, r in after_df.iterrows()), unsafe_allow_html=True)
-
-        st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
+    for _, report in reports.iterrows():
+        render_row(report)
 
         # ---------------- FOOTER: PAGE SIZE + PAGINATION ----------------
 
