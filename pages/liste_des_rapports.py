@@ -1,14 +1,28 @@
 import streamlit as st
 import pandas as pd
 from common import (
-    render_topbar, ICON_DOC, ICON_STAR, ICON_SEARCH, ICON_FOLDER,
+    inject_global_css, render_sidebar, render_topbar,
+    ICON_DOC, ICON_STAR, ICON_SEARCH, ICON_FOLDER,
     ICON_FILTER, ICON_CHEVRON_DOWN, ICON_CHEVRON_RIGHT, ICON_INFO,
     ICON_LIST_VIEW, ICON_GRID_VIEW, ICON_SETTINGS, ICON_KEBAB
 )
 
 # ------------------------------------------------------------
-# PAGE INITIALIZATION & TOPBAR
+# CHROME: CSS + sidebar + topbar
+# inject_global_css() is idempotent (just (re)injects a <style> tag),
+# so it's safe to call again even if the router already called it —
+# call it here explicitly so this page never renders unstyled.
 # ------------------------------------------------------------
+inject_global_css()
+
+NAV_ITEMS = [
+    {"page": "streamlit_app.py", "label": "Accueil", "icon": ":material/home:"},
+    {"page": "pages/liste_rapports.py", "label": "Liste des rapports", "icon": ":material/description:"},
+    {"page": "pages/suivi_exploit.py", "label": "Suivi de l'exploit", "icon": ":material/monitoring:"},
+    {"page": "pages/open_to_buy.py", "label": "Open to buy", "icon": ":material/shopping_bag:"},
+    {"page": "pages/mot_de_passe.py", "label": "Changer votre mot de passe", "icon": ":material/lock:"},
+]
+render_sidebar(NAV_ITEMS, dynamic_tabs_after="Liste des rapports")
 render_topbar("Production M3 13.4")
 
 st.markdown('<div class="page-title font-serif">Liste des rapports</div>', unsafe_allow_html=True)
@@ -31,7 +45,9 @@ with search_col:
     )
 
 with btn_col:
+    st.markdown('<div class="lr-search-btn">', unsafe_allow_html=True)
     st.button("Rechercher", key="report_search_btn", use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with fav_col:
     st.button("☆  Mes favoris", key="mes_favoris_btn", use_container_width=True)
@@ -39,8 +55,10 @@ with fav_col:
 st.markdown('<div style="height:20px;"></div>', unsafe_allow_html=True)
 
 # ============================================================
-# MOCK DATA (propriétaire / maj / usages kept in the dataframe
-# for future use elsewhere, but no longer rendered in the table)
+# MOCK DATA
+# (propriétaire / maj / usages are kept on the dataframe in case
+# they're needed elsewhere — e.g. sort_select — but are no longer
+# rendered as table columns per the design change below.)
 # ============================================================
 reports = pd.DataFrame([
     {"titre": "Mesures des Nouveaux Produits", "desc": "Suivi des mesures et performances produits",
@@ -88,33 +106,22 @@ REPERTOIRE_TREE = [
 ]
 
 # ============================================================
-# DYNAMIC IN-APP TABS — session-state driven
+# DYNAMIC IN-APP TABS — session-state driven, rendered by
+# render_sidebar() in common.py right under "Liste des rapports"
 # ============================================================
 if "dynamic_tabs" not in st.session_state:
-    # each entry: {"key": str, "label": str, "numero": int, "target_page": str}
     st.session_state.dynamic_tabs = []
-
 if "active_dynamic_tab" not in st.session_state:
     st.session_state.active_dynamic_tab = None
 
 
-def open_dynamic_tab(key: str, label: str, numero: int, target_page: str):
-    existing_keys = [t["key"] for t in st.session_state.dynamic_tabs]
-    if key not in existing_keys:
+def open_dynamic_tab(key: str, label: str, target_page: str):
+    if key not in [t["key"] for t in st.session_state.dynamic_tabs]:
         st.session_state.dynamic_tabs.append(
-            {"key": key, "label": label, "numero": numero, "target_page": target_page}
+            {"key": key, "label": label, "target_page": target_page}
         )
     st.session_state.active_dynamic_tab = key
-    st.rerun()
-
-
-def close_dynamic_tab(key: str):
-    st.session_state.dynamic_tabs = [
-        t for t in st.session_state.dynamic_tabs if t["key"] != key
-    ]
-    if st.session_state.active_dynamic_tab == key:
-        st.session_state.active_dynamic_tab = None
-    st.rerun()
+    st.switch_page(target_page)
 
 
 # ============================================================
@@ -172,7 +179,6 @@ with left_col:
 
 # ---------------- RIGHT PANEL: REPORTS TABLE ----------------
 with right_col:
-    # Sub-header controls row
     count_col, filt_col, sort_col, view_col = st.columns([3, 1.2, 2.5, 1])
 
     with count_col:
@@ -200,94 +206,60 @@ with right_col:
 
     st.markdown('<div style="height:12px;"></div>', unsafe_allow_html=True)
 
-    # ---- Table header: only Rapport / Numéro / Dossier remain ----
+    # ---- Table header: Rapport / Numéro / Dossier only ----
     st.markdown(
         f"""
-        <div class="rl-table-header" style="display: flex; font-weight: 600; border-bottom: 2px solid #EAE8E4; padding-bottom: 8px; color: #6E6A63; font-size: 13px;">
-            <div style="flex: 4.5;">Rapport</div>
-            <div style="flex: 1.2; text-align: left;">Numéro</div>
-            <div style="flex: 3.3;">Dossier</div>
-            <div style="width: 40px;"></div>
-            <div style="width: 40px;"></div>
+        <div class="rl-table-header">
+            <div>Rapport</div>
+            <div>Numéro</div>
+            <div>Dossier</div>
+            <div></div>
+            <div></div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
     # ---- Table rows ----
-    # We render each row individually so the 3rd report ("Article - Liste
-    # des Coloris / Taille") can be turned into a real click target that
-    # opens an in-app tab instead of a plain link.
-    for idx, r in reports.iterrows():
+    for _, r in reports.iterrows():
         star_class = "filled" if r["favori"] else ""
         is_tab_trigger = r["page"] == "article_coloris"
 
-        row_col, star_col, kebab_col = st.columns([8.5, 0.4, 0.4], gap="small")
+        row_html = f"""
+        <div class="rl-row">
+            <div class="rl-report-cell">
+                <div class="rl-report-icon">{ICON_DOC}</div>
+                <div>
+                    <div class="rl-report-title">{r['titre']}</div>
+                    <div class="rl-report-desc">{r['desc']}</div>
+                </div>
+            </div>
+            <div class="rl-cell">{r['numero']}</div>
+            <div class="rl-cell" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{r['dossier']}</div>
+            <div class="rl-star {star_class}">{ICON_STAR}</div>
+            <div class="rl-kebab">{ICON_KEBAB}</div>
+        </div>
+        """
 
-        with row_col:
-            if is_tab_trigger:
-                # Clickable row that opens the in-app tab
-                clicked = st.button(
-                    label=" ",  # invisible label; real content drawn via markdown below
+        if is_tab_trigger:
+            # Wrap the styled row in a keyed container so common.py's CSS
+            # can lay an invisible, full-size st.button over it — that
+            # button is the real click target, since native buttons
+            # can't hold this row's HTML.
+            with st.container(key=f"clickrow_{r['numero']}"):
+                st.markdown(row_html, unsafe_allow_html=True)
+                if st.button(
+                    " ",
                     key=f"open_tab_{r['numero']}",
-                    use_container_width=True,
                     help=f"Ouvrir « {r['titre']} » dans un nouvel onglet",
-                )
-                st.markdown(
-                    f"""
-                    <div class="rl-row rl-row-clickable" style="display:flex; align-items:center;
-                         margin-top:-42px; pointer-events:none; padding: 12px 0;
-                         border-bottom: 1px solid #F0EDE9; font-size: 14px;">
-                        <div class="rl-report-cell" style="flex: 4.5; display:flex; gap:10px; align-items:flex-start;">
-                            <div class="rl-report-icon" style="margin-top:2px;">{ICON_DOC}</div>
-                            <div>
-                                <div class="rl-report-title" style="font-weight:500; color:#1A1A1A;">{r['titre']}</div>
-                                <div class="rl-report-desc" style="font-size:12px; color:#8C8881;">{r['desc']}</div>
-                            </div>
-                        </div>
-                        <div class="rl-cell" style="flex: 1.2; color:#4A4640;">{r['numero']}</div>
-                        <div class="rl-cell" style="flex: 3.3; color:#4A4640; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{r['dossier']}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                if clicked:
+                ):
                     open_dynamic_tab(
                         key=f"tab_{r['numero']}",
                         label=r["titre"],
-                        numero=r["numero"],
                         target_page="pages/article_coloris.py",
                     )
-            else:
-                st.markdown(
-                    f"""
-                    <div class="rl-row" style="display:flex; align-items:center; padding: 12px 0;
-                         border-bottom: 1px solid #F0EDE9; font-size: 14px;">
-                        <div class="rl-report-cell" style="flex: 4.5; display:flex; gap:10px; align-items:flex-start;">
-                            <div class="rl-report-icon" style="margin-top:2px;">{ICON_DOC}</div>
-                            <div>
-                                <div class="rl-report-title" style="font-weight:500; color:#1A1A1A;">{r['titre']}</div>
-                                <div class="rl-report-desc" style="font-size:12px; color:#8C8881;">{r['desc']}</div>
-                            </div>
-                        </div>
-                        <div class="rl-cell" style="flex: 1.2; color:#4A4640;">{r['numero']}</div>
-                        <div class="rl-cell" style="flex: 3.3; color:#4A4640; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{r['dossier']}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-        with star_col:
-            st.markdown(
-                f'<div class="rl-star {star_class}" style="text-align:center; cursor:pointer; color:#C2BFBA; padding-top:12px;">{ICON_STAR}</div>',
-                unsafe_allow_html=True,
-            )
-
-        with kebab_col:
-            st.markdown(
-                f'<div class="rl-kebab" style="text-align:center; cursor:pointer; color:#C2BFBA; padding-top:12px;">{ICON_KEBAB}</div>',
-                unsafe_allow_html=True,
-            )
+        else:
+            st.markdown(row_html, unsafe_allow_html=True)
 
     st.markdown('<div style="height:20px;"></div>', unsafe_allow_html=True)
 
@@ -317,40 +289,3 @@ with right_col:
             """,
             unsafe_allow_html=True,
         )
-
-# ============================================================
-# SIDEBAR: DYNAMIC TABS (rendered under "Liste des rapports")
-# ============================================================
-# This relies on Streamlit's `st.sidebar` being additive: whatever nav
-# markup `render_topbar()` / common.py already drew into the sidebar
-# stays in place, and this block appends the dynamic tab rows directly
-# beneath it, since it executes after render_topbar() at the top of
-# this file.
-if st.session_state.dynamic_tabs:
-    with st.sidebar:
-        st.markdown('<div style="height:6px;"></div>', unsafe_allow_html=True)
-        for tab in st.session_state.dynamic_tabs:
-            is_active = st.session_state.active_dynamic_tab == tab["key"]
-            label_col, close_col = st.columns([5, 1])
-            with label_col:
-                if st.button(
-                    tab["label"],
-                    key=f"sidebar_tab_{tab['key']}",
-                    use_container_width=True,
-                    type="primary" if is_active else "secondary",
-                ):
-                    st.session_state.active_dynamic_tab = tab["key"]
-                    st.switch_page(tab["target_page"])
-            with close_col:
-                if st.button("✕", key=f"close_tab_{tab['key']}"):
-                    close_dynamic_tab(tab["key"])
-
-# If a dynamic tab is active and its target page isn't the current one,
-# jump to it (handles the case where the tab was just opened above).
-if st.session_state.active_dynamic_tab:
-    active = next(
-        (t for t in st.session_state.dynamic_tabs if t["key"] == st.session_state.active_dynamic_tab),
-        None,
-    )
-    if active:
-        st.switch_page(active["target_page"])
