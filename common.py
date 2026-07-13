@@ -167,9 +167,18 @@ def inject_global_css():
 
         /* ---------------- LISTE DES RAPPORTS ---------------- */
 
+        /* Align the search row (input + button) on the same vertical center,
+           regardless of each widget's own default height. */
+        div[data-testid="stHorizontalBlock"]:has(.lr-search-btn) {
+            align-items: center;
+        }
+        div[data-testid="stTextInput"] input {
+            height: 44px;
+        }
         .lr-search-btn button {
             background: var(--accent) !important; color: white !important;
             border: none !important; font-weight: 600 !important;
+            height: 44px !important; margin: 0 !important;
         }
         .lr-search-btn button:hover { background: #C15720 !important; }
 
