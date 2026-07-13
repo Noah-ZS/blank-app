@@ -312,10 +312,6 @@ else:
 
             st.divider()
 
-        linked_idx = reports.index[reports["page"] == "article_coloris"][0]
-        before_df = reports.loc[:linked_idx].iloc[:-1]
-        linked_row = reports.loc[linked_idx]
-        after_df = reports.loc[linked_idx:].iloc[1:]
 
     for _, report in reports.iterrows():
         render_row(report)
