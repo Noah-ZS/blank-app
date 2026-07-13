@@ -419,25 +419,36 @@ with tabs[3]:
                 key="export_body"
             )
 
-            spacer, c_cancel, c_ok = st.columns([4, 1, 1])
+            spacer, c_cancel, c_ok = st.columns([2, 1, 1])
+
+            cancel_email_clicked = False
+            ok_email_clicked = False
 
             with c_cancel:
-                if st.button("Annuler", key="cancel_email_btn"):
-                    st.rerun()
+                cancel_email_clicked = st.button(
+                    "Annuler", key="cancel_email_btn", use_container_width=True
+                )
 
             with c_ok:
-                if st.button("OK", key="ok_email_btn", type="primary"):
-                    try:
-                        send_email_with_attachment(
-                            to_email=to_email,
-                            subject=subject,
-                            body=body,
-                            attachment_bytes=csv_bytes,
-                            attachment_filename="articles_export.csv",
-                        )
-                        st.success("✅ E-mail envoyé avec succès.")
-                    except Exception as e:
-                        st.error(f"❌ Échec de l'envoi de l'e-mail : {e}")
+                ok_email_clicked = st.button(
+                    "OK", key="ok_email_btn", type="primary", use_container_width=True
+                )
+
+            if cancel_email_clicked:
+                st.rerun()
+
+            if ok_email_clicked:
+                try:
+                    send_email_with_attachment(
+                        to_email=to_email,
+                        subject=subject,
+                        body=body,
+                        attachment_bytes=csv_bytes,
+                        attachment_filename="articles_export.csv",
+                    )
+                    st.success("✅ E-mail envoyé avec succès.")
+                except Exception as e:
+                    st.error(f"❌ Échec de l'envoi de l'e-mail : {e}")
 
         st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
@@ -454,10 +465,10 @@ with tabs[3]:
                 "à utiliser l'export par email."
             )
 
-            spacer2, c_cancel2, c_ok2 = st.columns([4, 1, 1])
+            spacer2, c_cancel2, c_ok2 = st.columns([2, 1, 1])
 
             with c_cancel2:
-                if st.button("Annuler", key="cancel_download_btn"):
+                if st.button("Annuler", key="cancel_download_btn", use_container_width=True):
                     st.rerun()
 
             with c_ok2:
@@ -466,7 +477,8 @@ with tabs[3]:
                     data=csv_bytes,
                     file_name="articles_export.csv",
                     mime="text/csv",
-                    key="ok_download_btn"
+                    key="ok_download_btn",
+                    use_container_width=True
                 )
 
     # ====================================================
