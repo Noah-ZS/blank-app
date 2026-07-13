@@ -15,14 +15,6 @@ from common import (
 # ------------------------------------------------------------
 inject_global_css()
 
-NAV_ITEMS = [
-    {"page": "streamlit_app.py", "label": "Accueil", "icon": ":material/home:"},
-    {"page": "pages/liste_rapports.py", "label": "Liste des rapports", "icon": ":material/description:"},
-    {"page": "pages/suivi_exploit.py", "label": "Suivi de l'exploit", "icon": ":material/monitoring:"},
-    {"page": "pages/open_to_buy.py", "label": "Open to buy", "icon": ":material/shopping_bag:"},
-    {"page": "pages/mot_de_passe.py", "label": "Changer votre mot de passe", "icon": ":material/lock:"},
-]
-render_sidebar(NAV_ITEMS, dynamic_tabs_after="Liste des rapports")
 render_topbar("Production M3 13.4")
 
 st.markdown('<div class="page-title font-serif">Liste des rapports</div>', unsafe_allow_html=True)
