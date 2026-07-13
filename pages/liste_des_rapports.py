@@ -448,8 +448,8 @@ else:
 
             st.divider()
 
-            for _, report in reports.iterrows():
-                render_row(report)
+        for _, report in reports.iterrows():
+            render_row(report)
 
 # ---------------- FOOTER: PAGE SIZE + PAGINATION ----------------
 
