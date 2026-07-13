@@ -44,12 +44,10 @@ NAV_ITEMS = [
     {"page": accueil_page, "label": "Accueil", "icon": ":material/home:"},
     {"page": rapports_page, "label": "Liste des rapports", "icon": ":material/description:"},
     {"page": suivi_page, "label": "Suivi de l'exploit", "icon": ":material/monitoring:"},
-    {"page": open_to_buy_page, "label": "Open to buy", "icon": ":material/shopping_bag:"},
-    {"page": password_page, "label": "Changer votre mot de passe", "icon": ":material/lock_reset:"},
 ]
 
 pg = st.navigation(
-    [accueil_page, rapports_page, suivi_page, open_to_buy_page, password_page, article_coloris_page],
+    [accueil_page, rapports_page, suivi_page, article_coloris_page],
     position="hidden",
 )
 
