@@ -199,7 +199,7 @@ def inject_global_css():
             display: grid;
             grid-template-columns: minmax(260px,3fr) 90px minmax(220px,2fr) 34px 26px;
             gap: 10px; padding: 14px 4px; border-bottom: 1px solid var(--line);
-            align-items: center;
+            align-items: center; min-height: 62px;
         }
         .rl-row:last-child { border-bottom: none; }
         .rl-report-cell { display: flex; align-items: flex-start; gap: 11px; }
@@ -210,6 +210,30 @@ def inject_global_css():
         .rl-star { color: #C9C4B8; }
         .rl-star.filled { color: var(--accent); }
         .rl-kebab { color: #B4AFA6; }
+
+        /* Invisible full-row overlay button: sits on top of a
+           preceding HTML row (via negative margin) so the whole
+           row is clickable while keeping the exact same visuals.
+           Streamlit auto-adds a `st-key-<key>` class to the
+           element wrapping a keyed widget (1.36+), which is what
+           this targets. */
+        .st-key-open_article_row_click button {
+            margin-top: -62px !important;
+            height: 62px !important;
+            width: 100% !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            position: relative;
+            z-index: 5;
+            cursor: pointer;
+        }
+        .st-key-open_article_row_click button p { color: transparent !important; }
+        .st-key-open_article_row_click button:hover {
+            background: #FAF6F1 !important;
+            border-radius: 8px;
+        }
+        .st-key-open_article_row_click { margin-bottom: 0 !important; }
 
         .pill-btn {
             display: inline-flex; align-items: center; justify-content: center;

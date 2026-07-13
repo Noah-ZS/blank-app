@@ -261,10 +261,9 @@ else:
             unsafe_allow_html=True,
         )
 
-        rows_html = ""
-        for _, r in reports.iterrows():
+        def _row_html(r):
             star_class = "filled" if r["favori"] else ""
-            rows_html += f"""
+            return f"""
             <div class="rl-row">
                 <div class="rl-report-cell">
                     <div class="rl-report-icon">{ICON_DOC}</div>
@@ -280,17 +279,29 @@ else:
             </div>
             """
 
-        st.markdown(rows_html, unsafe_allow_html=True)
+        linked_idx = reports.index[reports["page"] == "article_coloris"][0]
+        before_df = reports.loc[:linked_idx].iloc[:-1]
+        linked_row = reports.loc[linked_idx]
+        after_df = reports.loc[linked_idx:].iloc[1:]
 
-        # Opens the linked report as an in-app tab (session_state
-        # swap), not a page navigation — matches the rest of the
-        # rows' static styling but is a real, working control.
-        linked_row = reports[reports["page"] == "article_coloris"].iloc[0]
+        if len(before_df):
+            st.markdown("".join(_row_html(r) for _, r in before_df.iterrows()), unsafe_allow_html=True)
+
+        # The "Article - Liste des Coloris / Taille" row: rendered
+        # with the exact same HTML as every other row, then an
+        # invisible full-width button is overlaid on top of it (see
+        # the .st-key-open_article_row_click CSS in common.py) so
+        # clicking anywhere on the row opens the in-app tab.
+        st.markdown(_row_html(linked_row), unsafe_allow_html=True)
         st.button(
-            f"Ouvrir « {linked_row['titre']} » (rapport n°{linked_row['numero']})",
-            key="open_article_tab_btn",
+            "Ouvrir le rapport Article - Liste des Coloris / Taille",
+            key="open_article_row_click",
             on_click=_open_article_tab,
+            use_container_width=True,
         )
+
+        if len(after_df):
+            st.markdown("".join(_row_html(r) for _, r in after_df.iterrows()), unsafe_allow_html=True)
 
         st.markdown('<div style="height:10px;"></div>', unsafe_allow_html=True)
 
