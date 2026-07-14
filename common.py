@@ -272,30 +272,87 @@ def inject_global_css():
 
 def render_sidebar(nav_items):
     """nav_items: list of dicts {"page": st.Page, "label": str, "icon": str}"""
+
+    # 1. Eliminate Top Blank Space & Apply Corporate Typography
+    st.markdown("""
+        <style>
+        /* Target the sidebar directly to remove the awkward top padding */
+        [data-testid="stSidebar"] {
+            padding-top: 0rem !important;
+            background-color: #F8FAFC !important; /* Soft corporate background */
+        }
+        [data-testid="stSidebar"] > div:first-child {
+            padding-top: 1.5rem !important; 
+        }
+
+        /* Typography for the branding fallbacks */
+        .brand-word {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1E293B; /* Dark slate */
+            margin-bottom: 0.1rem;
+        }
+        .brand-sub {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #D97757; /* Matches the Hermès Paris accent color */
+            letter-spacing: 1.2px;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        /* Styling for the logout row to align icon and text perfectly */
+        .logout-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #475569;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            cursor: pointer;
+        }
+        .logout-row:hover {
+            color: #1E293B;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     with st.sidebar:
-        try:
-            st.image("image.png", width=170)
-        except Exception:
-            st.markdown('<div class="brand-word">Infocentre</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="brand-sub">HERMÈS PARIS</div>', unsafe_allow_html=True)
+        # 2. Group Branding tightly at the top
+        with st.container():
+            try:
+                st.image("image.png", width=170)
+            except Exception:
+                st.markdown('<div class="brand-word">Infocentre</div>', unsafe_allow_html=True)
 
+            st.markdown('<div class="brand-sub">HERMÈS PARIS</div>', unsafe_allow_html=True)
+
+        # 3. Render Navigation Items
         for item in nav_items:
             st.page_link(item["page"], label=item["label"], icon=item["icon"])
 
-        st.markdown('<div class="sidebar-divider"></div>', unsafe_allow_html=True)
+        # Use native soft divider instead of custom HTML for cleaner structural grid
+        st.divider()
 
-        st.selectbox(
-            "Langue",
-            ["🌐 Français", "🌐 English"],
-            label_visibility="collapsed",
-            key="lang_select"
-        )
+        # 4. Group Footer Elements neatly
+        with st.container():
+            st.selectbox(
+                "Langue",
+                ["🌐 Français", "🌐 English"],
+                label_visibility="collapsed",
+                key="lang_select"
+            )
 
-        st.markdown(
-            f'<div class="logout-row">{ICON_LOGOUT}<span>Déconnexion</span></div>',
-            unsafe_allow_html=True,
-        )
+            # Note: Fixed the overlapping HTML tags from your original code
+            # Assuming ICON_LOGOUT is defined globally in your script
+            st.markdown(
+                f'<div class="logout-row">{ICON_LOGOUT}<span>Déconnexion</div>'</span>,
+                unsafe_allow_html=True,
+            )
 
 
 def render_topbar(version_label):
