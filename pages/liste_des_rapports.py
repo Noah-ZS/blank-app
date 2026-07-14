@@ -300,7 +300,7 @@ else:
                 with icon_col:
                     st.markdown(f'<div class="rl-report-icon">{ICON_DOC}</div>', unsafe_allow_html=True)
                 with text_col:
-                    if r["key"] is not None:
+                    if pd.notna(r["key"]):
                         st.button(
                             r["titre"],
                             key=f"open_{r['key']}_title_btn",
