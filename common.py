@@ -181,16 +181,6 @@ def inject_global_css():
         }
         .lr-search-btn button:hover { background: #C15720 !important; }
 
-        button[kind="tertiary"] p {
-    font-size: 14.5px;
-    font-weight: 600;
-}
-
-button[kind="tertiary"]:hover p {
-    color: #D9642A;
-    text-decoration: underline;
-}
-
         .repertoire-panel { background: #FFFFFF; border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; }
         .repertoire-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; margin-bottom: 12px; }
         .tree-item { display: flex; align-items: center; gap: 7px; padding: 6px 4px; font-size: 13.5px; color: #4A4640; border-radius: 6px; }
@@ -228,23 +218,18 @@ button[kind="tertiary"]:hover p {
         .rl-kebab { color: #B4AFA6; }
 
         /* Uniform "clickable title" look applied to every report
-           row's title, whether it's a real link (st.button styled
-           to look like text) or plain text — keeps the table
-           visually consistent even though only one row currently
-           has a real target. */
+           row's title. Rows linking to a real report use a native
+           st.button (keys like "open_<report>_title_btn") stripped
+           of all button chrome so it reads as plain link text;
+           non-linked rows use a plain <div class="rl-title-link">
+           with the same font styling, so the whole table reads as
+           one consistent list even though only 3 rows are truly
+           clickable. */
         .rl-title-link {
             font-size: 14.5px; font-weight: 600; color: var(--ink);
-            text-decoration: none; cursor: default;
-        }
-        a.rl-title-link, .rl-title-link.is-link { cursor: pointer; }
-        a.rl-title-link:hover, .rl-title-link.is-link:hover {
-            color: var(--accent); text-decoration: underline;
         }
 
-        /* The one real clickable title, rendered as a native
-           st.button but stripped of all button chrome so it reads
-           as plain link text inline with the row. */
-        .st-key-open_article_title_btn button {
+        [class*="st-key-open_"][class*="_title_btn"] button {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
@@ -254,16 +239,16 @@ button[kind="tertiary"]:hover p {
             text-align: left !important;
             justify-content: flex-start !important;
         }
-        .st-key-open_article_title_btn button p {
+        [class*="st-key-open_"][class*="_title_btn"] button p {
             font-size: 14.5px !important;
             font-weight: 600 !important;
             color: var(--ink) !important;
         }
-        .st-key-open_article_title_btn button:hover p {
+        [class*="st-key-open_"][class*="_title_btn"] button:hover p {
             color: var(--accent) !important;
             text-decoration: underline !important;
         }
-        .st-key-open_article_title_btn { margin-bottom: 0 !important; }
+        [class*="st-key-open_"][class*="_title_btn"] { margin-bottom: 0 !important; }
 
         .rl-th { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); padding-bottom: 8px; }
         .rl-row-hr { border: none; border-top: 1px solid var(--line); margin: 4px 0 10px 0; }
@@ -349,6 +334,32 @@ def load_articles():
         """
         SELECT *
         FROM INFOCENTRE_DB.PUBLIC.ARTICLES
+        """,
+        ttl=300
+    )
+    return data
+
+
+@st.cache_data(ttl=300)
+def load_mesures_produits():
+    conn = st.connection("snowflake", type="snowflake")
+    data = conn.query(
+        """
+        SELECT *
+        FROM INFOCENTRE_DB.PUBLIC.MESURES_NOUVEAUX_PRODUITS
+        """,
+        ttl=300
+    )
+    return data
+
+
+@st.cache_data(ttl=300)
+def load_commandes_detail():
+    conn = st.connection("snowflake", type="snowflake")
+    data = conn.query(
+        """
+        SELECT *
+        FROM INFOCENTRE_DB.PUBLIC.COMMANDES_DETAIL
         """,
         ttl=300
     )

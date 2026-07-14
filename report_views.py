@@ -1,27 +1,28 @@
 """
-Shared report content that can be rendered either as its own
-standalone page (pages/article_coloris.py) or embedded inline
-as an in-app tab (pages/liste_des_rapports.py's tab system).
+Shared report content, rendered either as a standalone page
+(pages/article_coloris.py, pages/mesures_produits.py,
+pages/commandes_detail.py) or embedded inline as an in-app tab
+(pages/liste_des_rapports.py's multi-tab manager).
 
-Keeping this in one place means both entry points stay in sync
-with a single copy of the filter/export/table logic.
+IMPORTANT: since several of these views can be open as separate
+in-app tabs at the same time, every piece of session_state and
+every widget key is namespaced per report (prefixes "art_",
+"mes_", "cmd_") so switching tabs never leaks one report's data,
+filters, or reset-counter into another's.
 """
 
 import streamlit as st
-from common import load_articles, send_email_with_attachment
+from common import (
+    load_articles, load_mesures_produits, load_commandes_detail,
+    send_email_with_attachment
+)
 
 
-def render_article_coloris_view():
-    """Renders the full 'Article - Liste des Coloris / Taille' report
-    body: compact filter styling, Snowflake data, filters, export
-    dialog (with Gmail delivery), results table, and SQL preview.
-    Does NOT render a page title or top bar — the caller decides
-    whether/how to show those (standalone page vs. embedded tab)."""
+# ================================================================
+# SHARED HELPERS
+# ================================================================
 
-    # ----------------------------------------------------
-    # COMPACT STYLING FOR FILTER WIDGETS
-    # ----------------------------------------------------
-
+def _inject_compact_filter_css():
     st.markdown(
         """
         <style>
@@ -39,97 +40,154 @@ def render_article_coloris_view():
         unsafe_allow_html=True
     )
 
-    # ----------------------------------------------------
-    # SNOWFLAKE DATA
-    # ----------------------------------------------------
 
-    if "df" not in st.session_state:
-        st.session_state.df = load_articles()
+def _make_export_dialog(report_key, csv_bytes, default_subject, filename):
+    """Builds the 'Exporter le rapport' dialog (email delivery via
+    Gmail, or immediate CSV download) for a given report. Returns a
+    callable — call it to actually open the dialog."""
 
-    df = st.session_state.df
+    @st.dialog("Exporter le rapport")
+    def _dialog():
 
-    # ----------------------------------------------------
-    # SHOW/HIDE TABLE STATE
-    # ----------------------------------------------------
+        st.write("Vous avez demandé un **EXPORT**.")
 
-    if "show_table" not in st.session_state:
-        st.session_state.show_table = False
-
-    def reveal_table():
-        st.session_state.show_table = True
-
-    # ----------------------------------------------------
-    # WIDGET KEYS FOR THE FILTER FIELDS
-    # ----------------------------------------------------
-
-    if "reset_counter" not in st.session_state:
-        st.session_state.reset_counter = 0
-
-    def _k(name):
-        return f"{name}_{st.session_state.reset_counter}"
-
-    def reset_filters():
-        st.session_state.reset_counter += 1
-
-    # ----------------------------------------------------
-    # REPORT HEADER
-    # ----------------------------------------------------
-
-    c1, c2, c3 = st.columns([5, 1, 1])
-
-    with c1:
-        st.text_input(
-            "Rapport",
-            value="Rapport n°646 : Article - Liste des Coloris / Taille",
-            disabled=True
+        st.selectbox(
+            "Format de fichier",
+            ["📄 CSV séparateur virgule avec symbole décimale : virgule"],
+            key=f"{report_key}_export_format"
         )
 
-    with c2:
-        st.selectbox("Vue", ["Initiale"])
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
+        with st.container(border=True):
+
+            st.markdown("📧 &nbsp; **Pour recevoir le rapport par e-mail**")
+
+            to_email = st.text_input(
+                "E-mail du destinataire", value="generic.cognos@hermes.com",
+                key=f"{report_key}_export_to_email"
+            )
+            subject = st.text_input(
+                "Objet de l'e-mail", value=default_subject,
+                key=f"{report_key}_export_subject"
+            )
+            body = st.text_area(
+                "Texte de l'e-mail (optionnel)",
+                placeholder="Ajoutez un message personnalisé (optionnel)...",
+                key=f"{report_key}_export_body"
+            )
+
+            spacer, c_cancel, c_ok = st.columns([2, 1, 1])
+
+            with c_cancel:
+                if st.button("Annuler", key=f"{report_key}_cancel_email_btn", use_container_width=True):
+                    st.rerun()
+
+            with c_ok:
+                if st.button("OK", key=f"{report_key}_ok_email_btn", type="primary", use_container_width=True):
+                    try:
+                        send_email_with_attachment(
+                            to_email=to_email, subject=subject, body=body,
+                            attachment_bytes=csv_bytes, attachment_filename=filename,
+                        )
+                        st.success("✅ E-mail envoyé avec succès.")
+                    except Exception as e:
+                        st.error(f"❌ Échec de l'envoi de l'e-mail : {e}")
+
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+
+        with st.container(border=True):
+
+            st.markdown("ℹ️ &nbsp; **Pour générer maintenant le fichier export**")
+
+            st.warning(
+                "**Attention** — L'application n'est pas en mesure d'estimer le temps que "
+                "prendra l'extraction. Les requêtes les plus lourdes peuvent provoquer une "
+                "absence de réponse du serveur (timeout). Dans ce cas, nous vous invitons "
+                "à utiliser l'export par email."
+            )
+
+            spacer2, c_cancel2, c_ok2 = st.columns([2, 1, 1])
+
+            with c_cancel2:
+                if st.button("Annuler", key=f"{report_key}_cancel_download_btn", use_container_width=True):
+                    st.rerun()
+
+            with c_ok2:
+                st.download_button(
+                    "OK", data=csv_bytes, file_name=filename, mime="text/csv",
+                    key=f"{report_key}_ok_download_btn", use_container_width=True
+                )
+
+    return _dialog
+
+
+# ================================================================
+# 1. ARTICLE - LISTE DES COLORIS / TAILLE
+# ================================================================
+
+def render_article_coloris_view():
+
+    _inject_compact_filter_css()
+
+    if "art_df" not in st.session_state:
+        st.session_state.art_df = load_articles()
+    df = st.session_state.art_df
+
+    if "art_show_table" not in st.session_state:
+        st.session_state.art_show_table = False
+
+    if "art_reset_counter" not in st.session_state:
+        st.session_state.art_reset_counter = 0
+
+    def _k(name):
+        return f"art_{name}_{st.session_state.art_reset_counter}"
+
+    def reveal_table():
+        st.session_state.art_show_table = True
+
+    def reset_filters():
+        st.session_state.art_reset_counter += 1
+
+    c1, c2, c3 = st.columns([5, 1, 1])
+    with c1:
+        st.text_input("Rapport", value="Rapport n°646 : Article - Liste des Coloris / Taille", disabled=True, key="art_rapport_label")
+    with c2:
+        st.selectbox("Vue", ["Initiale"], key="art_vue")
     with c3:
         st.write("")
-        st.button("Modification", key="modif_btn")
+        st.button("Modification", key="art_modif_btn")
 
     st.subheader("Liste des articles - Coloris - Taille")
 
     general_tab, coloris_tab = st.tabs(["Général", "Coloris"])
 
     with general_tab:
-
         col1, col2, col3, col4 = st.columns(4, gap="small")
-
         with col1:
             metier = st.selectbox("Métier", ["Tous"] + sorted(df["METIER"].unique()), key=_k("f_metier"))
             code_coloris = st.text_input("Code Coloris", key=_k("f_code_coloris"))
             ref_article = st.text_input("REF ARTICLE", key=_k("f_ref_article"))
-
         with col2:
             supply = st.selectbox("Supply Chain", ["Tous"] + sorted(df["SUPPLY_CHAIN"].unique()), key=_k("f_supply"))
             sku = st.text_input("Code SKU", key=_k("f_sku"))
             libelle_article = st.text_input("Libellé Article", key=_k("f_libelle_article"))
-
         with col3:
             famille = st.text_input("Famille", key=_k("f_famille"))
             libelle_coloris = st.text_input("Libellé Coloris", key=_k("f_libelle_coloris"))
             statut = st.radio("Statut", ["Tous", "Actif", "Inactif"], key=_k("f_statut"), horizontal=True)
-
         with col4:
             produit = st.text_input("Produit", key=_k("f_produit"))
             cb1, cb2 = st.columns(2)
             with cb1:
-                podium = st.checkbox("Pod-New", key=_k("f_podium"))
+                st.checkbox("Pod-New", key=_k("f_podium"))
             with cb2:
-                nouveaute = st.checkbox("Nouveauté", key=_k("f_nouveaute"))
+                st.checkbox("Nouveauté", key=_k("f_nouveaute"))
 
     with coloris_tab:
         st.info("Onglet Coloris")
 
     st.divider()
-
-    # ----------------------------------------------------
-    # FILTER FUNCTION
-    # ----------------------------------------------------
 
     def apply_filters(data):
         filtered = data.copy()
@@ -155,137 +213,30 @@ def render_article_coloris_view():
             filtered = filtered[filtered["REF_ARTICLE"].str.contains(ref_article)]
         return filtered
 
-    # ----------------------------------------------------
-    # EXPORT DIALOG
-    # ----------------------------------------------------
-
-    @st.dialog("Exporter le rapport")
-    def export_dialog():
-
-        st.write("Vous avez demandé un **EXPORT**.")
-
-        file_format = st.selectbox(
-            "Format de fichier",
-            [
-                "📄 CSV séparateur virgule avec symbole décimale : virgule",
-                "📄 CSV séparateur point-virgule avec symbole décimale : virgule",
-            ],
-            key="export_format"
-        )
-
-        separator = ";" if "point-virgule" in file_format else ","
-        export_source = apply_filters(df) if st.session_state.show_table else df.iloc[0:0]
-        csv_bytes = export_source.to_csv(index=False, sep=separator).encode("utf-8-sig")
-
-        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-
-        with st.container(border=True):
-
-            st.markdown("📧 &nbsp; **Pour recevoir le rapport par e-mail**")
-
-            to_email = st.text_input("E-mail du destinataire", value="generic.cognos@hermes.com", key="export_to_email")
-            subject = st.text_input(
-                "Objet de l'e-mail",
-                value="Ariane - Rapport n°646 : Article - Liste des Coloris / Taille : Extraction détaillée",
-                key="export_subject"
-            )
-            body = st.text_area(
-                "Texte de l'e-mail (optionnel)",
-                placeholder="Ajoutez un message personnalisé (optionnel)...",
-                key="export_body"
-            )
-
-            spacer, c_cancel, c_ok = st.columns([2, 1, 1])
-
-            cancel_email_clicked = False
-            ok_email_clicked = False
-
-            with c_cancel:
-                cancel_email_clicked = st.button("Annuler", key="cancel_email_btn", use_container_width=True)
-
-            with c_ok:
-                ok_email_clicked = st.button("OK", key="ok_email_btn", type="primary", use_container_width=True)
-
-            if cancel_email_clicked:
-                st.rerun()
-
-            if ok_email_clicked:
-                try:
-                    send_email_with_attachment(
-                        to_email=to_email,
-                        subject=subject,
-                        body=body,
-                        attachment_bytes=csv_bytes,
-                        attachment_filename="articles_export.csv",
-                    )
-                    st.success("✅ E-mail envoyé avec succès.")
-                except Exception as e:
-                    st.error(f"❌ Échec de l'envoi de l'e-mail : {e}")
-
-        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-
-        with st.container(border=True):
-
-            st.markdown("ℹ️ &nbsp; **Pour générer maintenant le fichier export**")
-
-            st.warning(
-                "**Attention** — L'application n'est pas en mesure d'estimer le temps que "
-                "prendra l'extraction. Les requêtes les plus lourdes peuvent provoquer une "
-                "absence de réponse du serveur (timeout). Dans ce cas, nous vous invitons "
-                "à utiliser l'export par email."
-            )
-
-            spacer2, c_cancel2, c_ok2 = st.columns([2, 1, 1])
-
-            with c_cancel2:
-                if st.button("Annuler", key="cancel_download_btn", use_container_width=True):
-                    st.rerun()
-
-            with c_ok2:
-                st.download_button(
-                    "OK", data=csv_bytes, file_name="articles_export.csv",
-                    mime="text/csv", key="ok_download_btn", use_container_width=True
-                )
-
-    # ----------------------------------------------------
-    # BUTTONS
-    # ----------------------------------------------------
-
     b1, b2, b3, b4 = st.columns(4)
-
     with b1:
-        st.button("Afficher", on_click=reveal_table, key="afficher_btn")
-
+        st.button("Afficher", on_click=reveal_table, key="art_afficher_btn")
     with b2:
-        st.button("Réinitialiser", on_click=reset_filters, key="reinit_btn")
-
+        st.button("Réinitialiser", on_click=reset_filters, key="art_reinit_btn")
     with b3:
-        if st.button("Exporter", disabled=not st.session_state.show_table, key="exporter_btn"):
-            export_dialog()
-
+        export_source = apply_filters(df) if st.session_state.art_show_table else df.iloc[0:0]
+        csv_bytes = export_source.to_csv(index=False).encode("utf-8-sig")
+        if st.button("Exporter", disabled=not st.session_state.art_show_table, key="art_exporter_btn"):
+            _make_export_dialog(
+                "art", csv_bytes,
+                "Ariane - Rapport n°646 : Article - Liste des Coloris / Taille : Extraction détaillée",
+                "articles_export.csv",
+            )()
     with b4:
-        st.button("Sauvegarder la vue", key="sauvegarder_btn")
+        st.button("Sauvegarder la vue", key="art_sauvegarder_btn")
 
     st.divider()
 
-    # ----------------------------------------------------
-    # TABLE
-    # ----------------------------------------------------
-
-    if st.session_state.show_table:
-        st.session_state.filtered_df = apply_filters(df)
-        st.data_editor(
-            st.session_state.filtered_df,
-            use_container_width=True,
-            hide_index=True,
-            height=500
-        )
+    if st.session_state.art_show_table:
+        st.session_state.art_filtered_df = apply_filters(df)
+        st.data_editor(st.session_state.art_filtered_df, use_container_width=True, hide_index=True, height=500)
     else:
         st.info("Cliquez sur **Afficher** pour afficher les résultats.")
-
-    # ----------------------------------------------------
-    # SQL QUERY PREVIEW
-    # ----------------------------------------------------
 
     def build_sql():
         where = []
@@ -315,6 +266,218 @@ def render_article_coloris_view():
         return sql
 
     st.divider()
+    with st.expander("Afficher la requête SQL"):
+        st.code(build_sql(), language="sql")
 
+
+# ================================================================
+# 2. MESURES DES NOUVEAUX PRODUITS
+# ================================================================
+
+def render_mesures_produits_view():
+
+    _inject_compact_filter_css()
+
+    if "mes_df" not in st.session_state:
+        st.session_state.mes_df = load_mesures_produits()
+    df = st.session_state.mes_df
+
+    if "mes_show_table" not in st.session_state:
+        st.session_state.mes_show_table = False
+
+    if "mes_reset_counter" not in st.session_state:
+        st.session_state.mes_reset_counter = 0
+
+    def _k(name):
+        return f"mes_{name}_{st.session_state.mes_reset_counter}"
+
+    def reveal_table():
+        st.session_state.mes_show_table = True
+
+    def reset_filters():
+        st.session_state.mes_reset_counter += 1
+
+    st.text_input(
+        "Rapport", value="Rapport n°1722 : Mesures des Nouveaux Produits",
+        disabled=True, key="mes_rapport_label"
+    )
+    st.subheader("Suivi des mesures et performances produits")
+    st.divider()
+
+    col1, col2, col3 = st.columns([1.4, 1.2, 2])
+    with col1:
+        categories = st.multiselect(
+            "Catégorie", sorted(df["CATEGORIE"].unique()), key=_k("f_categorie")
+        )
+    with col2:
+        statut = st.selectbox(
+            "Statut", ["Tous"] + sorted(df["STATUT_TEST"].unique()), key=_k("f_statut")
+        )
+    with col3:
+        search = st.text_input(
+            "Rechercher", placeholder="Code ou nom de produit...", key=_k("f_search")
+        )
+
+    st.divider()
+
+    def apply_filters(data):
+        filtered = data.copy()
+        if categories:
+            filtered = filtered[filtered["CATEGORIE"].isin(categories)]
+        if statut != "Tous":
+            filtered = filtered[filtered["STATUT_TEST"] == statut]
+        if search:
+            mask = (
+                filtered["CODE_PRODUIT"].str.contains(search, case=False)
+                | filtered["NOM_PRODUIT"].str.contains(search, case=False)
+            )
+            filtered = filtered[mask]
+        return filtered
+
+    b1, b2, b3 = st.columns(3)
+    with b1:
+        st.button("Afficher", on_click=reveal_table, key="mes_afficher_btn")
+    with b2:
+        st.button("Réinitialiser", on_click=reset_filters, key="mes_reinit_btn")
+    with b3:
+        export_source = apply_filters(df) if st.session_state.mes_show_table else df.iloc[0:0]
+        csv_bytes = export_source.to_csv(index=False).encode("utf-8-sig")
+        if st.button("Exporter", disabled=not st.session_state.mes_show_table, key="mes_exporter_btn"):
+            _make_export_dialog(
+                "mes", csv_bytes,
+                "Ariane - Rapport n°1722 : Mesures des Nouveaux Produits : Extraction détaillée",
+                "mesures_produits_export.csv",
+            )()
+
+    st.divider()
+
+    if st.session_state.mes_show_table:
+        st.session_state.mes_filtered_df = apply_filters(df)
+        st.data_editor(st.session_state.mes_filtered_df, use_container_width=True, hide_index=True, height=500)
+    else:
+        st.info("Cliquez sur **Afficher** pour afficher les résultats.")
+
+    def build_sql():
+        where = []
+        if categories:
+            cat_list = ", ".join(f"'{c}'" for c in categories)
+            where.append(f"CATEGORIE IN ({cat_list})")
+        if statut != "Tous":
+            where.append(f"STATUT_TEST = '{statut}'")
+        if search:
+            where.append(f"(CODE_PRODUIT ILIKE '%{search}%' OR NOM_PRODUIT ILIKE '%{search}%')")
+        sql = "SELECT *\nFROM INFOCENTRE_DB.PUBLIC.MESURES_NOUVEAUX_PRODUITS"
+        if where:
+            sql += "\nWHERE " + "\n  AND ".join(where)
+        return sql
+
+    st.divider()
+    with st.expander("Afficher la requête SQL"):
+        st.code(build_sql(), language="sql")
+
+
+# ================================================================
+# 3. COMMANDES - DÉTAIL
+# ================================================================
+
+def render_commandes_detail_view():
+
+    _inject_compact_filter_css()
+
+    if "cmd_df" not in st.session_state:
+        st.session_state.cmd_df = load_commandes_detail()
+    df = st.session_state.cmd_df
+
+    if "cmd_show_table" not in st.session_state:
+        st.session_state.cmd_show_table = False
+
+    if "cmd_reset_counter" not in st.session_state:
+        st.session_state.cmd_reset_counter = 0
+
+    def _k(name):
+        return f"cmd_{name}_{st.session_state.cmd_reset_counter}"
+
+    def reveal_table():
+        st.session_state.cmd_show_table = True
+
+    def reset_filters():
+        st.session_state.cmd_reset_counter += 1
+
+    st.text_input(
+        "Rapport", value="Rapport n°667 : Commandes - Détail",
+        disabled=True, key="cmd_rapport_label"
+    )
+    st.subheader("Détail des commandes et lignes associées")
+    st.divider()
+
+    df_dates = df["DATE_COMMANDE"]
+    min_date, max_date = df_dates.min(), df_dates.max()
+
+    col1, col2, col3, col4 = st.columns([1.1, 1.1, 1.6, 1.6])
+    with col1:
+        date_start = st.date_input("Date début", value=min_date, key=_k("f_date_start"))
+    with col2:
+        date_end = st.date_input("Date fin", value=max_date, key=_k("f_date_end"))
+    with col3:
+        statuts = st.multiselect(
+            "Statut de livraison", sorted(df["STATUT_LIVRAISON"].unique()), key=_k("f_statut")
+        )
+    with col4:
+        search = st.text_input(
+            "Rechercher", placeholder="Client ou n° de commande...", key=_k("f_search")
+        )
+
+    st.divider()
+
+    def apply_filters(data):
+        filtered = data.copy()
+        filtered = filtered[
+            (filtered["DATE_COMMANDE"] >= date_start) & (filtered["DATE_COMMANDE"] <= date_end)
+        ]
+        if statuts:
+            filtered = filtered[filtered["STATUT_LIVRAISON"].isin(statuts)]
+        if search:
+            mask = (
+                filtered["NOM_CLIENT"].str.contains(search, case=False)
+                | filtered["ID_COMMANDE"].str.contains(search, case=False)
+            )
+            filtered = filtered[mask]
+        return filtered
+
+    b1, b2, b3 = st.columns(3)
+    with b1:
+        st.button("Afficher", on_click=reveal_table, key="cmd_afficher_btn")
+    with b2:
+        st.button("Réinitialiser", on_click=reset_filters, key="cmd_reinit_btn")
+    with b3:
+        export_source = apply_filters(df) if st.session_state.cmd_show_table else df.iloc[0:0]
+        csv_bytes = export_source.to_csv(index=False).encode("utf-8-sig")
+        if st.button("Exporter", disabled=not st.session_state.cmd_show_table, key="cmd_exporter_btn"):
+            _make_export_dialog(
+                "cmd", csv_bytes,
+                "Ariane - Rapport n°667 : Commandes - Détail : Extraction détaillée",
+                "commandes_detail_export.csv",
+            )()
+
+    st.divider()
+
+    if st.session_state.cmd_show_table:
+        st.session_state.cmd_filtered_df = apply_filters(df)
+        st.data_editor(st.session_state.cmd_filtered_df, use_container_width=True, hide_index=True, height=500)
+    else:
+        st.info("Cliquez sur **Afficher** pour afficher les résultats.")
+
+    def build_sql():
+        where = [f"DATE_COMMANDE BETWEEN '{date_start}' AND '{date_end}'"]
+        if statuts:
+            statut_list = ", ".join(f"'{s}'" for s in statuts)
+            where.append(f"STATUT_LIVRAISON IN ({statut_list})")
+        if search:
+            where.append(f"(NOM_CLIENT ILIKE '%{search}%' OR ID_COMMANDE ILIKE '%{search}%')")
+        sql = "SELECT *\nFROM INFOCENTRE_DB.PUBLIC.COMMANDES_DETAIL"
+        sql += "\nWHERE " + "\n  AND ".join(where)
+        return sql
+
+    st.divider()
     with st.expander("Afficher la requête SQL"):
         st.code(build_sql(), language="sql")

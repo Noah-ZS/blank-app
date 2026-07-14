@@ -38,13 +38,23 @@ password_page = st.Page(
     url_path="changer-mot-de-passe"
 )
 
-# Registered for routing (reachable via st.switch_page / st.page_link
-# from within liste_des_rapports.py) but NOT shown in the main sidebar
-# nav list, since it's opened by clicking a specific report row.
+# Registered for routing/deep-linking but NOT shown in the main
+# sidebar nav list — each is opened as an in-app tab from within
+# liste_des_rapports.py by clicking its report row.
 article_coloris_page = st.Page(
     "pages/article_coloris.py",
     title="Article - Liste des Coloris / Taille",
     url_path="article-coloris"
+)
+mesures_produits_page = st.Page(
+    "pages/mesures_produits.py",
+    title="Mesures des Nouveaux Produits",
+    url_path="mesures-produits"
+)
+commandes_detail_page = st.Page(
+    "pages/commandes_detail.py",
+    title="Commandes - Détail",
+    url_path="commandes-detail"
 )
 
 NAV_ITEMS = [
@@ -56,7 +66,10 @@ NAV_ITEMS = [
 ]
 
 pg = st.navigation(
-    [accueil_page, rapports_page, suivi_page, open_to_buy_page, password_page, article_coloris_page],
+    [
+        accueil_page, rapports_page, suivi_page, open_to_buy_page, password_page,
+        article_coloris_page, mesures_produits_page, commandes_detail_page,
+    ],
     position="hidden",
 )
 
