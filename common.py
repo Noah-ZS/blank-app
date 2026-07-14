@@ -74,17 +74,20 @@ def inject_global_css():
         header[data-testid="stHeader"] {
             background: transparent !important;
             box-shadow: none !important;
-            height: 0.35rem !important;
-            min-height: 0.35rem !important;
+            height: 0.2rem !important;
+            min-height: 0.2rem !important;
         }
         .stApp { background: #FFFFFF; padding-top: 0 !important; }
         html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: var(--ink); }
         .font-serif { font-family: 'Fraunces', serif; }
 
+        section.main {
+            padding-top: 0 !important;
+        }
         section.main .block-container {
             max-width: 1320px;
             margin: 0 auto;
-            padding: 0.35rem 3rem 4rem 3rem !important;
+            padding: 0.2rem 3rem 4rem 3rem !important;
         }
 
         /* ---------------- SIDEBAR ---------------- */
@@ -136,7 +139,8 @@ def inject_global_css():
 
         .topbar {
             display: flex; align-items: center; justify-content: flex-end;
-            gap: 14px; color: var(--ink-soft); font-size: 13.5px; margin-bottom: 12px;
+            gap: 14px; color: var(--ink-soft); font-size: 13.5px; margin: 0 0 8px 0;
+            padding-top: 0;
         }
         .avatar {
             width: 34px; height: 34px; border-radius: 50%;
@@ -145,8 +149,8 @@ def inject_global_css():
             font-size: 12.5px; font-weight: 600;
         }
 
-        .page-title { font-family: 'Fraunces', serif; font-size: 38px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
-        .page-subtitle { color: var(--ink-soft); font-size: 15px; margin-bottom: 30px; }
+        .page-title { font-family: 'Fraunces', serif; font-size: 38px; font-weight: 600; color: var(--ink); margin: 0 0 4px 0; }
+        .page-subtitle { color: var(--ink-soft); font-size: 15px; margin: 0 0 20px 0; }
 
         /* ---------------- KPI CARDS (accueil) ---------------- */
 
