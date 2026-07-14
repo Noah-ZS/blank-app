@@ -303,7 +303,7 @@ def render_topbar(version_label):
         f"""
         <div class="topbar">
             <span>{version_label}</span>
-            <div class="avatar">MM</div>
+            <div class="avatar">NJ</div>
             {ICON_CHEVRON_DOWN}
         </div>
         """,
