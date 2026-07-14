@@ -196,7 +196,7 @@ def render_sidebar(nav_items):
                 key="lang_select"
             )
             st.markdown(
-                f'<div class="logout-row">{ICON_LOGOUT}<span>Déconnexion</div>'</span>,
+                f'<div class="logout-row">{ICON_LOGOUT}<span>Déconnexion</span></div>',
                 unsafe_allow_html=True,
             )
 
