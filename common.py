@@ -74,17 +74,17 @@ def inject_global_css():
         header[data-testid="stHeader"] {
             background: transparent !important;
             box-shadow: none !important;
-            height: 2.4rem !important;
-            min-height: 2.4rem !important;
+            height: 0.35rem !important;
+            min-height: 0.35rem !important;
         }
-        .stApp { background: #FFFFFF; }
+        .stApp { background: #FFFFFF; padding-top: 0 !important; }
         html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: var(--ink); }
         .font-serif { font-family: 'Fraunces', serif; }
 
         section.main .block-container {
             max-width: 1320px;
             margin: 0 auto;
-            padding: 1.5rem 3rem 4rem 3rem;
+            padding: 0.35rem 3rem 4rem 3rem !important;
         }
 
         /* ---------------- SIDEBAR ---------------- */
@@ -136,7 +136,7 @@ def inject_global_css():
 
         .topbar {
             display: flex; align-items: center; justify-content: flex-end;
-            gap: 14px; color: var(--ink-soft); font-size: 13.5px; margin-bottom: 26px;
+            gap: 14px; color: var(--ink-soft); font-size: 13.5px; margin-bottom: 12px;
         }
         .avatar {
             width: 34px; height: 34px; border-radius: 50%;
