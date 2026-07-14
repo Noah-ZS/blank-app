@@ -68,15 +68,18 @@ def inject_global_css():
             --success: #1E8A5F;
         }
 
+        /* ---------------- STREAMLIT CHROME RESET (FIXES TOP DEAD SPACE) ---------------- */
         #MainMenu, footer { visibility: hidden; height: 0; }
         div[data-testid="stDecoration"] { display: none; }
         div[data-testid="stToolbar"] { visibility: hidden; }
+        
+        /* Force clear hidden headers that take up blank vertical viewport room */
         header[data-testid="stHeader"] {
-            background: transparent !important;
-            box-shadow: none !important;
-            height: 0.2rem !important;
-            min-height: 0.2rem !important;
+            display: none !important;
+            height: 0px !important;
+            min-height: 0px !important;
         }
+        
         .stApp { background: #FFFFFF; padding-top: 0 !important; }
         html, body, [class*="css"] { font-family: 'Inter', sans-serif; color: var(--ink); }
         .font-serif { font-family: 'Fraunces', serif; }
@@ -84,13 +87,15 @@ def inject_global_css():
         section.main {
             padding-top: 0 !important;
         }
+        
+        /* Strict adjustments to move top bars, layout titles, and metrics beautifully upward */
         section.main .block-container {
             max-width: 1320px;
             margin: 0 auto;
-            padding: 0.2rem 3rem 4rem 3rem !important;
+            padding: 1rem 3rem 4rem 3rem !important; /* Brought padding-top to 1rem to perfectly align main page with sidebar top */
         }
 
-        /* ---------------- SIDEBAR ---------------- */
+        /* ---------------- SIDEBAR POLISHING ---------------- */
 
         section[data-testid="stSidebar"] {
             background: var(--cream);
@@ -98,19 +103,22 @@ def inject_global_css():
             min-width: 272px;
             max-width: 272px;
         }
-        section[data-testid="stSidebar"] > div { padding: 1.6rem 1.3rem; }
+        section[data-testid="stSidebar"] > div:first-child { 
+            padding: 1.5rem 1.3rem !important; /* Snug top-padding grid alignment */
+        }
 
         .brand-word {
             font-family: 'Fraunces', serif;
             font-size: 28px; font-weight: 600; color: var(--ink);
-            line-height: 1.1; margin: 4px 0 2px 0;
+            line-height: 1.1; margin: 0px 0 2px 0;
         }
         .brand-sub {
+            font-family: 'Inter', sans-serif;
             font-size: 11px; font-weight: 600; letter-spacing: 0.14em;
             color: var(--accent); margin-bottom: 22px;
         }
 
-        /* Style native st.page_link anchors to look like our nav items */
+        /* Custom alignment for native st.page_link anchors */
         section[data-testid="stSidebar"] a[data-testid^="stPageLink"] {
             display: flex; align-items: center; gap: 10px;
             padding: 9px 12px !important; border-radius: 8px;
@@ -133,13 +141,14 @@ def inject_global_css():
         .logout-row {
             display: flex; align-items: center; gap: 10px;
             color: #57534A; font-size: 14px; font-weight: 500; margin-top: 16px;
+            font-family: 'Inter', sans-serif;
         }
 
         /* ---------------- MAIN TOP BAR ---------------- */
 
         .topbar {
             display: flex; align-items: center; justify-content: flex-end;
-            gap: 14px; color: var(--ink-soft); font-size: 13.5px; margin: 0 0 8px 0;
+            gap: 14px; color: var(--ink-soft); font-size: 13.5px; margin: 0 0 12px 0;
             padding-top: 0;
         }
         .avatar {
@@ -149,7 +158,14 @@ def inject_global_css():
             font-size: 12.5px; font-weight: 600;
         }
 
-        .page-title { font-family: 'Fraunces', serif; font-size: 38px; font-weight: 600; color: var(--ink); margin: 0 0 4px 0; }
+        .page-title { 
+            font-family: 'Fraunces', serif; 
+            font-size: 38px; 
+            font-weight: 600; 
+            color: var(--ink); 
+            margin: 0 0 4px 0; 
+            line-height: 1.15;
+        }
         .page-subtitle { color: var(--ink-soft); font-size: 15px; margin: 0 0 20px 0; }
 
         /* ---------------- KPI CARDS (accueil) ---------------- */
@@ -215,14 +231,6 @@ def inject_global_css():
         .rl-star.filled { color: var(--accent); }
         .rl-kebab { color: #B4AFA6; }
 
-        /* Uniform "clickable title" look applied to every report
-           row's title. Rows linking to a real report use a native
-           st.button (keys like "open_<report>_title_btn") stripped
-           of all button chrome so it reads as plain link text;
-           non-linked rows use a plain <div class="rl-title-link">
-           with the same font styling, so the whole table reads as
-           one consistent list even though only 3 rows are truly
-           clickable. */
         .rl-title-link {
             font-size: 14.5px; font-weight: 600; color: var(--ink);
         }
@@ -276,57 +284,8 @@ def inject_global_css():
 
 def render_sidebar(nav_items):
     """nav_items: list of dicts {"page": st.Page, "label": str, "icon": str}"""
-
-    # 1. Eliminate Top Blank Space & Apply Corporate Typography
-    st.markdown("""
-        <style>
-        /* Target the sidebar directly to remove the awkward top padding */
-        [data-testid="stSidebar"] {
-            padding-top: 0rem !important;
-            background-color: #F8FAFC !important; /* Soft corporate background */
-        }
-        [data-testid="stSidebar"] > div:first-child {
-            padding-top: 1.5rem !important; 
-        }
-
-        /* Typography for the branding fallbacks */
-        .brand-word {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #1E293B; /* Dark slate */
-            margin-bottom: 0.1rem;
-        }
-        .brand-sub {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: #D97757; /* Matches the Hermès Paris accent color */
-            letter-spacing: 1.2px;
-            margin-bottom: 1.5rem;
-            text-transform: uppercase;
-        }
-
-        /* Styling for the logout row to align icon and text perfectly */
-        .logout-row {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #475569;
-            font-weight: 500;
-            margin-top: 0.5rem;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            cursor: pointer;
-        }
-        .logout-row:hover {
-            color: #1E293B;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
     with st.sidebar:
-
-        # 2. Group Branding tightly at the top
+        # Group Branding tightly at the top container
         with st.container():
             try:
                 st.image("image.png", width=170)
@@ -335,14 +294,14 @@ def render_sidebar(nav_items):
 
             st.markdown('<div class="brand-sub">HERMÈS PARIS</div>', unsafe_allow_html=True)
 
-        # 3. Render Navigation Items
+        # Render Premium Navigation Links
         for item in nav_items:
             st.page_link(item["page"], label=item["label"], icon=item["icon"])
 
-        # Use native soft divider instead of custom HTML for cleaner structural grid
+        # Soft, clean visual layout separator
         st.divider()
 
-        # 4. Group Footer Elements neatly
+        # Group Language Selector and Logout action cleanly at bottom
         with st.container():
             st.selectbox(
                 "Langue",
@@ -351,8 +310,6 @@ def render_sidebar(nav_items):
                 key="lang_select"
             )
 
-            # Note: Fixed the overlapping HTML tags from your original code
-            # Assuming ICON_LOGOUT is defined globally in your script
             st.markdown(
                 f'<div class="logout-row">{ICON_LOGOUT}<span>Déconnexion</span></div>',
                 unsafe_allow_html=True,
@@ -379,7 +336,7 @@ def render_placeholder_page(title, version_label="Version Production 5.2.1"):
     st.info("🚧 Cette section n'a pas encore été implémentée.")
 
 # ============================================================
-# SNOWFLAKE DATA (shared by pages that need the ARTICLES table)
+# SNOWFLAKE DATA (shared by pages that need the TABLES)
 # ============================================================
 
 @st.cache_data(ttl=300)
@@ -423,12 +380,6 @@ def load_commandes_detail():
 # ============================================================
 # EMAIL SENDING (Gmail SMTP)
 # ============================================================
-# Requires a Google App Password in .streamlit/secrets.toml as a
-# ROOT-LEVEL key (i.e. above any [section] header):
-#
-#   smtp_password = "xxxx xxxx xxxx xxxx"
-#
-# Generate one at: https://myaccount.google.com/apppasswords
 
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
