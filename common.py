@@ -350,7 +350,7 @@ def render_sidebar(nav_items):
             # Note: Fixed the overlapping HTML tags from your original code
             # Assuming ICON_LOGOUT is defined globally in your script
             st.markdown(
-                f'<div class="logout-row">{ICON_LOGOUT}<span>Déconnexion</div>'</span>,
+                f'<div class="logout-row">{ICON_LOGOUT}<span>Déconnexion</span></div>',
                 unsafe_allow_html=True,
             )
 
