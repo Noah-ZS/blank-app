@@ -175,12 +175,6 @@ def inject_global_css():
 
         /* ---------------- LISTE DES RAPPORTS ---------------- */
 
-        .lr-search-btn button {
-            background: var(--accent) !important; color: white !important;
-            border: none !important; font-weight: 600 !important;
-        }
-        .lr-search-btn button:hover { background: #C15720 !important; }
-
         .repertoire-panel { background: #FFFFFF; border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; }
         .repertoire-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; margin-bottom: 12px; }
         .tree-item { display: flex; align-items: center; gap: 7px; padding: 6px 4px; font-size: 13.5px; color: #4A4640; border-radius: 6px; }

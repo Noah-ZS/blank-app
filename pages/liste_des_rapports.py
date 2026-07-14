@@ -131,9 +131,7 @@ else:
         )
 
     with btn_col:
-        st.markdown('<div class="lr-search-btn">', unsafe_allow_html=True)
-        st.button("Rechercher", key="report_search_btn", use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.button("Rechercher", key="report_search_btn", type="primary", use_container_width=True)
 
     with fav_col:
         st.button("☆  Mes favoris", key="mes_favoris_btn", use_container_width=True)
