@@ -123,11 +123,11 @@ else:
             indent_class = "tree-indent-1" if item["level"] == 1 else ""
             state_class = {"active": "tree-active", "parent-active": "tree-parent-active", "normal": ""}[item["state"]]
             
-            if item.get("star"): chevron_html = f'<span class="tree-chevron" style="color:var(--accent);">★'</span>
-            elif item["chevron"] == "down": chevron_html = f'<span class="tree-chevron">{ICON_CHEVRON_DOWN}'</span>
-            else: chevron_html = f'<span class="tree-chevron">{ICON_CHEVRON_RIGHT}'</span>
+            if item.get("star"): chevron_html = f'<span class="tree-chevron" style="color:var(--accent);">★</span>'
+            elif item["chevron"] == "down": chevron_html = f'<span class="tree-chevron">{ICON_CHEVRON_DOWN}</span>'
+            else: chevron_html = f'<span class="tree-chevron">{ICON_CHEVRON_RIGHT}</span>'
             
-            icon_html = "" if item.get("star") else f'<span class="tree-icon">{ICON_FOLDER}'</span>
+            icon_html = "" if item.get("star") else f'<span class="tree-icon">{ICON_FOLDER}</span>'
             tree_html += f'<div class="tree-item {state_class} {indent_class}">{chevron_html}{icon_html}<span>{item["label"]}</div>'</span>
 
         st.markdown(tree_html, unsafe_allow_html=True)
