@@ -128,7 +128,7 @@ else:
             else: chevron_html = f'<span class="tree-chevron">{ICON_CHEVRON_RIGHT}</span>'
             
             icon_html = "" if item.get("star") else f'<span class="tree-icon">{ICON_FOLDER}</span>'
-            tree_html += f'<div class="tree-item {state_class} {indent_class}">{chevron_html}{icon_html}<span>{item["label"]}</div>'</span>
+            tree_html += f'<div class="tree-item {state_class} {indent_class}">{chevron_html}{icon_html}<span>{item["label"]}</span></div>'
 
         st.markdown(tree_html, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
