@@ -64,7 +64,7 @@ def _make_export_dialog(report_key, csv_bytes, default_subject, filename):
             st.markdown("📧 &nbsp; **Pour recevoir le rapport par e-mail**")
 
             to_email = st.text_input(
-                "E-mail du destinataire", value="generic.cognos@hermes.com",
+                "E-mail du destinataire", value="noah.jubain@talan.com",
                 key=f"{report_key}_export_to_email"
             )
             subject = st.text_input(
