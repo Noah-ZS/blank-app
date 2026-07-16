@@ -1,94 +1,23 @@
 import streamlit as st
 import pandas as pd
 from common import (
-    render_topbar, ICON_DOC, ICON_STAR, ICON_CHEVRON_RIGHT
+    render_topbar, ICON_DOC, ICON_CLOCK, ICON_STAR,
+    ICON_ARROW_UP, ICON_ARROW_DOWN, ICON_CHEVRON_RIGHT
 )
 
 render_topbar("Version Production 5.2.1")
 
 # ============================================================
-# PAGE-LOCAL STYLE (scoped to Accueil only — doesn't touch
-# common.py, so every other page keeps its current look)
-# ============================================================
-
-st.markdown(
-    """
-    <style>
-    /* ---------------- HERO BANNER ---------------- */
-    /* Dark slate-to-warm-ink gradient rather than blue/indigo,
-       to stay visually connected to the app's existing ink/cream
-       palette while still feeling bold. Kept short/thin per the
-       brief so it doesn't push the dashboard down. */
-    .hero-v2 {
-        background: linear-gradient(135deg, #1C1B19 0%, #322F29 55%, #4A3B27 100%);
-        border-radius: 16px;
-        padding: 24px 36px;
-        margin-bottom: 26px;
-    }
-    .hero-v2-greeting {
-        font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600;
-        color: #FFFFFF; margin-bottom: 3px;
-    }
-    .hero-v2-sub { font-size: 14px; color: rgba(255,255,255,0.72); }
-
-    /* ---------------- KPI CARDS ---------------- */
-    .kpi-v2 {
-        background: #FFFFFF; border: 1px solid var(--line);
-        border-top: 4px solid var(--kpi-accent, var(--accent));
-        border-radius: 14px; padding: 20px 20px 18px 20px; height: 100%;
-        box-shadow: 0 4px 14px rgba(28,27,25,0.06);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .kpi-v2:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(28,27,25,0.11); }
-    .kpi-v2.accent-blue   { border-top-color: #3B6FE0; }
-    .kpi-v2.accent-green  { border-top-color: #1E9E6B; }
-    .kpi-v2.accent-purple { border-top-color: #8A5CF6; }
-    .kpi-v2.accent-red    { border-top-color: #E0473B; }
-
-    .kpi-v2-icon  { font-size: 22px; margin-bottom: 10px; }
-    .kpi-v2-label { font-size: 13px; color: var(--ink-soft); font-weight: 500; margin-bottom: 6px; }
-    .kpi-v2-value { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
-
-    .trend-pill {
-        display: inline-flex; align-items: center; gap: 4px;
-        font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
-    }
-    .trend-pill.positive { background: #E7F6EE; color: #1E9E6B; }
-    .trend-pill.negative { background: #FBE9E7; color: #E0473B; }
-    .kpi-v2-caption { font-size: 11.5px; color: var(--ink-soft); margin-left: 6px; }
-
-    /* ---------------- LIST PANELS (Rapports récents / Vos favoris) ---------------- */
-    .panel-v2 {
-        background: #FFFFFF; border: 1px solid var(--line); border-radius: 14px;
-        padding: 22px 22px 12px 22px; height: 100%;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    .list-row-v2 {
-        display: flex; align-items: center; gap: 12px;
-        padding: 13px 10px; margin: 0 -10px 0 -10px;
-        border-radius: 10px; border-bottom: 1px solid var(--line);
-        transition: background 0.15s ease, transform 0.15s ease;
-    }
-    .list-row-v2:last-child { border-bottom: none; }
-    .list-row-v2:hover { background: var(--card); transform: translateX(3px); }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ============================================================
 # HERO BANNER
+# (soft gradient background; margin-bottom is negative so the
+# KPI row below visually overlaps its bottom edge)
 # ============================================================
-# ASSUMPTION: "Noah" is a placeholder first name (matches the
-# account used elsewhere in this app). Swap in a real value —
-# e.g. from Snowflake's CURRENT_USER() or your auth/session
-# state — once you have a proper identity source to pull from.
 
 st.markdown(
     """
-    <div class="hero-v2">
-        <div class="hero-v2-greeting">Bonjour Noah !</div>
-        <div class="hero-v2-sub">Voici l'état de vos rapports aujourd'hui.</div>
+    <div class="hero-banner">
+        <div class="page-title font-serif">Bienvenue sur votre Infocentre</div>
+        <div class="page-subtitle">Votre portail de Business Intelligence dédié à la performance.</div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -115,38 +44,33 @@ favorite_reports = pd.DataFrame([
 ])
 
 kpis = [
-    {"icon": "📈", "label": "Rapports générés ce mois", "value": "142",
-     "trend_text": "▲ +12%", "trend_class": "positive", "accent": "accent-blue"},
-    {"icon": "⏱️", "label": "Temps moyen d'exécution", "value": "1.8 s",
-     "trend_text": "▼ -0.4 s", "trend_class": "positive", "accent": "accent-green"},
-    {"icon": "⭐", "label": "Rapports favoris", "value": "18",
-     "trend_text": "▲ +3", "trend_class": "positive", "accent": "accent-purple"},
-    {"icon": "⚠️", "label": "Rapports en erreur", "value": "3",
-     "trend_text": "▲ +2", "trend_class": "negative", "accent": "accent-red"},
+    {"label": "Rapports générés ce mois", "value": "142", "delta": "+12% vs mois précédent", "trend": "up", "icon": ICON_DOC},
+    {"label": "Temps moyen d'exécution", "value": "1.8 s", "delta": "-0.4 s vs mois précédent", "trend": "down", "icon": ICON_CLOCK},
+    {"label": "Rapports favoris", "value": "18", "delta": "+3 vs mois précédent", "trend": "up", "icon": ICON_STAR},
 ]
 
 # ============================================================
-# KPI CARDS
+# KPI CARDS (overlapping the hero's bottom edge)
 # ============================================================
 
-kpi_cols = st.columns(4, gap="medium")
+kpi_cols = st.columns(3, gap="medium")
 
 for col, kpi in zip(kpi_cols, kpis):
+    arrow = ICON_ARROW_UP if kpi["trend"] == "up" else ICON_ARROW_DOWN
     with col:
         st.markdown(
             f"""
-            <div class="kpi-v2 {kpi['accent']}">
-                <div class="kpi-v2-icon">{kpi['icon']}</div>
-                <div class="kpi-v2-label">{kpi['label']}</div>
-                <div class="kpi-v2-value">{kpi['value']}</div>
-                <span class="trend-pill {kpi['trend_class']}">{kpi['trend_text']}</span>
-                <span class="kpi-v2-caption">vs mois précédent</span>
+            <div class="kpi-card">
+                <div class="kpi-icon">{kpi['icon']}</div>
+                <div class="kpi-label">{kpi['label']}</div>
+                <div class="kpi-value font-serif">{kpi['value']}</div>
+                <div class="kpi-delta">{kpi['delta']} {arrow}</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-st.markdown('<div style="height:30px;"></div>', unsafe_allow_html=True)
+st.markdown('<div style="height:34px;"></div>', unsafe_allow_html=True)
 
 # ============================================================
 # TWO-COLUMN LIST PANELS
@@ -158,7 +82,7 @@ with left_col:
     rows_html = ""
     for _, r in recent_reports.iterrows():
         rows_html += f"""
-        <div class="list-row-v2">
+        <div class="list-row">
             <div class="list-icon">{ICON_DOC}</div>
             <div>
                 <div class="list-title">{r['titre']}</div>
@@ -170,7 +94,7 @@ with left_col:
 
     st.markdown(
         f"""
-        <div class="panel-v2">
+        <div class="panel">
             <div class="panel-header">
                 <div class="panel-title font-serif">Rapports récents</div>
                 <div class="panel-link">Voir tout {ICON_CHEVRON_RIGHT}</div>
@@ -186,7 +110,7 @@ with right_col:
     rows_html = ""
     for _, r in favorite_reports.iterrows():
         rows_html += f"""
-        <div class="list-row-v2">
+        <div class="list-row">
             <div class="list-icon starred">{ICON_STAR}</div>
             <div>
                 <div class="list-title">{r['titre']}</div>
@@ -197,7 +121,7 @@ with right_col:
 
     st.markdown(
         f"""
-        <div class="panel-v2">
+        <div class="panel">
             <div class="panel-header">
                 <div class="panel-title font-serif">Vos favoris</div>
                 <div class="panel-link">Voir tout {ICON_CHEVRON_RIGHT}</div>
