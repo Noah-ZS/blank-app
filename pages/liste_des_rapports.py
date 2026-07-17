@@ -38,7 +38,7 @@ st.markdown(
         border: none !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        padding: 4px 2px 10px 2px !important;
+        padding: 4px 2px 0px 2px !important;
         margin: 0 !important;
         font-size: 14.5px !important;
         font-weight: 500 !important;
