@@ -21,65 +21,69 @@ st.markdown(
 
 # ============================================================
 # PAGE-LOCAL STYLE: TAB BAR
-# Scoped to this page only (doesn't touch common.py). Overrides
-# Streamlit's default bordered/pill button chrome so the tabs
-# read as flat text — dark ink when inactive, accent-orange with
-# a bottom underline when active — matching the target design.
-# Close (×) buttons are styled separately, kept minimal/subtle.
 # ============================================================
 
 st.markdown(
     """
     <style>
-    /* Tab label buttons: match on any key starting "tab_" that is
-       NOT one of the "..._close_btn" close buttons. */
+    /* 1. Prevent text wrapping on tab labels */
+    [class*="st-key-tab_"] button p {
+        white-space: nowrap !important;
+    }
+
+    /* 2. Style the main tab buttons */
     [class*="st-key-tab_"]:not([class*="_close_btn"]) button {
         background: transparent !important;
         border: none !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        padding: 4px 2px 10px 2px !important;
+        padding: 4px 4px 10px 16px !important; /* Left padding for spacing */
         margin: 0 !important;
         font-size: 14.5px !important;
         font-weight: 500 !important;
         color: var(--ink, #1C1B19) !important;
-        text-align: left !important;
-        justify-content: flex-start !important;
         border-bottom: 2px solid transparent !important;
-        width: auto !important;
-        min-width: 0 !important;
     }
+
     [class*="st-key-tab_"]:not([class*="_close_btn"]) button:hover {
         color: var(--accent, #D9642A) !important;
         background: transparent !important;
     }
-    /* Active tab — Streamlit renders type="primary" buttons with a
-       "primary" kind marker; covering both the older and current
-       attribute/testid conventions so this holds across versions. */
-    [class*="st-key-tab_"]:not([class*="_close_btn"]) button[kind="primary"],
-    [class*="st-key-tab_"]:not([class*="_close_btn"]) [data-testid="stBaseButton-primary"],
-    [class*="st-key-tab_"]:not([class*="_close_btn"]) [data-testid="baseButton-primary"] {
-        color: var(--accent, #D9642A) !important;
-        font-weight: 600 !important;
-        border-bottom: 2px solid var(--accent, #D9642A) !important;
-    }
 
-    /* Close (×) buttons: no box, just a small subtle glyph that
-       reddens on hover — present for function, invisible as chrome. */
+    /* 3. Style the Close (×) buttons to seamlessly attach to the label */
     [class*="st-key-tab_"][class*="_close_btn"] button {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
         color: #B4AFA6 !important;
-        padding: 0 !important;
-        margin-top: 6px !important;
-        height: auto !important;
-        min-height: 0 !important;
-        font-size: 12px !important;
-        width: auto !important;
+        padding: 4px 16px 10px 4px !important; /* Right padding for spacing */
+        margin: 0 !important;
+        font-size: 14px !important;
+        border-bottom: 2px solid transparent !important;
     }
+
     [class*="st-key-tab_"][class*="_close_btn"] button:hover {
         color: #E0473B !important;
+    }
+
+    /* 4. Active state: apply the orange underline to BOTH the label and the close button */
+    [class*="st-key-tab_"] button[kind="primary"],
+    [class*="st-key-tab_"] [data-testid="stBaseButton-primary"],
+    [class*="st-key-tab_"] [data-testid="baseButton-primary"] {
+        color: var(--accent, #D9642A) !important;
+        font-weight: 600 !important;
+        border-bottom: 2px solid var(--accent, #D9642A) !important;
+    }
+
+    /* 5. FORCE COLUMNS TO HUG CONTENT */
+    [data-testid="stHorizontalBlock"]:has([class*="st-key-tab_"]) {
+        gap: 0px !important; 
+    }
+
+    [data-testid="stHorizontalBlock"]:has([class*="st-key-tab_"]) > [data-testid="column"] {
+        min-width: max-content !important;
+        width: max-content !important;
+        flex: 0 0 auto !important;
     }
     </style>
     """,
@@ -88,10 +92,6 @@ st.markdown(
 
 # ============================================================
 # REPORT REGISTRY
-# Maps a report key -> its tab label and the shared view function
-# that renders it (from report_views.py). Adding a new in-app
-# report tab in the future just means adding an entry here.
-# (UNCHANGED — pure UI/layout pass, no logic touched below.)
 # ============================================================
 
 REPORT_TABS = {
@@ -101,13 +101,13 @@ REPORT_TABS = {
 }
 
 # ============================================================
-# MULTI-TAB STATE (UNCHANGED)
+# MULTI-TAB STATE
 # ============================================================
 
 if "lr_active_tab" not in st.session_state:
     st.session_state.lr_active_tab = "liste"
 if "lr_open_tabs" not in st.session_state:
-    st.session_state.lr_open_tabs = []  # ordered list of report keys
+    st.session_state.lr_open_tabs = []  
 
 
 def _activate_tab(key):
@@ -137,25 +137,16 @@ def _toggle_favorite(numero):
 
 # ------------------------------------------------------------
 # TAB BAR
-# Streamlit columns can't natively size to their content — they
-# only take a relative ratio of the row's total width. Rather
-# than estimate pixel widths from character counts (fragile: it
-# depends on the actual rendered font/padding, which a Python
-# formula can't know), the tab row is wrapped in a keyed
-# container and every column inside it is forced via CSS to
-# hug its own content (flex: 0 0 auto) — letting the browser do
-# the actual text measurement — except the trailing spacer
-# column, which keeps growing to push all tabs to the left.
 # ------------------------------------------------------------
 
 open_tabs = st.session_state.lr_open_tabs
 
 with st.container(key="tab_bar_row"):
-    # Initial ratios barely matter — the CSS above overrides every
-    # column to auto-size to its content regardless of what's passed
-    # here, aside from the trailing spacer column.
-    tab_cols = st.columns([1] * (len(open_tabs) + 1) + [6])
+    # Flattened layout: 1 for Home + 2 for each opened tab + 1 spacer at the end
+    total_elements = 1 + (len(open_tabs) * 2)
+    tab_cols = st.columns([1] * total_elements + [10])
 
+    # 1. Home Tab
     with tab_cols[0]:
         st.button(
             "Liste des rapports",
@@ -165,30 +156,38 @@ with st.container(key="tab_bar_row"):
             args=("liste",),
         )
 
-    for i, key in enumerate(open_tabs):
-        with tab_cols[i + 1]:
-            label_col, close_col = st.columns([5, 1])
-            with label_col:
-                st.button(
-                    REPORT_TABS[key]["label"],
-                    key=f"tab_{key}_btn",
-                    type="primary" if st.session_state.lr_active_tab == key else "secondary",
-                    on_click=_activate_tab,
-                    args=(key,),
-                )
-            with close_col:
-                st.button(
-                    "✖",
-                    key=f"tab_{key}_close_btn",
-                    on_click=_close_tab,
-                    args=(key,),
-                )
+    # 2. Dynamic Tabs
+    col_index = 1
+    for key in open_tabs:
+        is_active = (st.session_state.lr_active_tab == key)
+
+        # Label
+        with tab_cols[col_index]:
+            st.button(
+                REPORT_TABS[key]["label"],
+                key=f"tab_{key}_btn",
+                type="primary" if is_active else "secondary",
+                on_click=_activate_tab,
+                args=(key,),
+            )
+        col_index += 1
+
+        # Close Button
+        with tab_cols[col_index]:
+            st.button(
+                "✖",
+                key=f"tab_{key}_close_btn",
+                type="primary" if is_active else "secondary", 
+                on_click=_close_tab,
+                args=(key,),
+            )
+        col_index += 1
 
 st.divider()
 
 
 # ============================================================
-# TAB CONTENT (UNCHANGED dispatch logic)
+# TAB CONTENT 
 # ============================================================
 
 if st.session_state.lr_active_tab in REPORT_TABS:
@@ -197,13 +196,7 @@ if st.session_state.lr_active_tab in REPORT_TABS:
 
 else:
 
-    # ========================================================
-    # "LISTE DES RAPPORTS" BODY — redesigned to match the
-    # target screenshots: single search/filter row, card grid
-    # instead of a table.
-    # ========================================================
-
-    # ---------------- SEARCH / FILTER / SORT ROW (functional) ----------------
+    # ---------------- SEARCH / FILTER / SORT ROW ----------------
 
     reports = get_reports_catalog()
     favorites = get_favorites()
@@ -337,16 +330,6 @@ else:
         st.markdown('</div>', unsafe_allow_html=True)
 
     with right_col:
-
-        # ---------------- CARD GRID (2 columns) ----------------
-        # Rows with a real report key (mesures/article/commandes)
-        # still open their in-app tab exactly as before — the
-        # title is a genuine st.button. Each card uses a REAL
-        # st.container(border=True) rather than a raw HTML <div>
-        # spanning two separate st.markdown() calls — Streamlit
-        # widgets can't nest inside a hand-written div that way
-        # (they render as siblings, not children), which is what
-        # caused the broken/empty card boxes before.
 
         if filtered_reports.empty:
 
