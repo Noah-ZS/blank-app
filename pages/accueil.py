@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 from common import (
-    render_topbar, ICON_DOC, ICON_STAR, ICON_CHEVRON_RIGHT
+    render_topbar, ICON_DOC, ICON_STAR, ICON_CHEVRON_RIGHT,
+    get_reports_catalog, get_favorites
 )
 
 render_topbar("Version Production 5.2.1")
@@ -106,20 +107,21 @@ recent_reports = pd.DataFrame([
     {"titre": "Factures - CA Consolidation (J-1)", "categorie": "Gestion Financière", "quand": "Il y a 2 jours"},
 ])
 
-favorite_reports = pd.DataFrame([
-    {"titre": "Commande - Détail", "categorie": "Gestion Commerciale"},
-    {"titre": "Article - Emballage", "categorie": "Référentiel Article"},
-    {"titre": "Suivi de l'exploit", "categorie": "Production"},
-    {"titre": "Open to buy - Synthèse", "categorie": "Pilotage"},
-    {"titre": "Ventes - Par pays", "categorie": "Gestion Commerciale"},
-])
+# "Vos favoris" now reflects real toggles from Liste des rapports
+# (st.session_state.favorites), cross-referenced against the same
+# shared reports catalog — not hardcoded mock data anymore.
+favorites = get_favorites()
+catalog = get_reports_catalog()
+favorite_reports = catalog[catalog["numero"].isin(favorites)].rename(
+    columns={"titre": "titre", "categorie": "categorie"}
+)
 
 kpis = [
     {"icon": "📈", "label": "Rapports générés ce mois", "value": "142",
      "trend_text": "▲ +12%", "trend_class": "positive", "accent": "accent-blue"},
     {"icon": "⏱️", "label": "Temps moyen d'exécution", "value": "1.8 s",
      "trend_text": "▼ -0.4 s", "trend_class": "positive", "accent": "accent-green"},
-    {"icon": "⭐", "label": "Rapports favoris", "value": "18",
+    {"icon": "⭐", "label": "Rapports favoris", "value": str(len(favorites)),
      "trend_text": "▲ +3", "trend_class": "positive", "accent": "accent-purple"},
     {"icon": "⚠️", "label": "Rapports en erreur", "value": "3",
      "trend_text": "▲ +2", "trend_class": "negative", "accent": "accent-red"},
@@ -183,17 +185,24 @@ with left_col:
     )
 
 with right_col:
-    rows_html = ""
-    for _, r in favorite_reports.iterrows():
-        rows_html += f"""
-        <div class="list-row-v2">
-            <div class="list-icon starred">{ICON_STAR}</div>
-            <div>
-                <div class="list-title">{r['titre']}</div>
-                <div class="list-category">{r['categorie']}</div>
+    if favorite_reports.empty:
+        rows_html = (
+            '<div style="padding:18px 4px; color:var(--ink-soft); font-size:13.5px;">'
+            'Aucun rapport favori pour le moment. Cliquez sur ☆ dans '
+            '<b>Liste des rapports</b> pour en ajouter.</div>'
+        )
+    else:
+        rows_html = ""
+        for _, r in favorite_reports.iterrows():
+            rows_html += f"""
+            <div class="list-row-v2">
+                <div class="list-icon starred">{ICON_STAR}</div>
+                <div>
+                    <div class="list-title">{r['titre']}</div>
+                    <div class="list-category">{r['categorie']}</div>
+                </div>
             </div>
-        </div>
-        """
+            """
 
     st.markdown(
         f"""

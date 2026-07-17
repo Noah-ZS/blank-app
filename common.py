@@ -16,6 +16,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import streamlit as st
+import pandas as pd
 
 # ============================================================
 # ICONS
@@ -223,14 +224,21 @@ def inject_global_css():
            the global bordered-container rounding rule below. These
            classes only style the content placed inside it. */
 
-        .rc-favori-pill {
-            display: inline-flex; align-items: center; gap: 5px;
-            font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
-            border: 1px solid var(--line); color: var(--ink-soft);
-            margin-bottom: 10px;
+        /* The ⭐/☆ favorite-toggle button — a real st.button
+           (key pattern "fav_btn_<numero>"), stripped of button
+           chrome so it reads as a plain clickable star glyph. */
+        [class*="st-key-fav_btn_"] button {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            height: auto !important;
+            min-height: 0 !important;
         }
-        .rc-favori-pill.is-favori { background: var(--accent-bg); color: var(--accent); border-color: var(--accent-bg); }
-        .rc-kebab { color: #B4AFA6; padding-top: 3px; }
+        [class*="st-key-fav_btn_"] button p { font-size: 18px !important; line-height: 1 !important; }
+        [class*="st-key-fav_btn_"] { margin-bottom: 10px !important; }
+
+        .rc-kebab { color: #B4AFA6; padding-top: 6px; }
         .rc-card-title { font-family: 'Fraunces', serif; font-size: 16.5px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
         .rc-card-meta { font-size: 13px; color: #4A4640; margin-bottom: 6px; }
         .rc-card-footer-divider { border-top: 1px solid var(--line); margin: 6px 0 8px 0; }
@@ -351,6 +359,43 @@ def render_placeholder_page(title, version_label="Version Production 5.2.1"):
     render_topbar(version_label, breadcrumb=["Accueil", title])
     st.markdown(f'<div class="page-title font-serif">{title}</div>', unsafe_allow_html=True)
     st.info("🚧 Cette section n'a pas encore été implémentée.")
+
+# ============================================================
+# REPORTS CATALOG (shared mock data)
+# Used by both liste_des_rapports.py (search/filter/sort/cards)
+# and accueil.py ("Vos favoris" panel), so a favorite toggled on
+# one page is immediately reflected on the other via the same
+# st.session_state.favorites set, keyed by report "numero".
+# ============================================================
+
+def get_reports_catalog():
+    return pd.DataFrame([
+        {"key": "mesures", "titre": "Mesures des Nouveaux Produits", "desc": "Suivi des mesures et performances produits",
+         "numero": 1722, "dossier": "Logistique - Infolog", "categorie": "Logistique", "maj": "23/05/2026"},
+        {"key": "article", "titre": "Article - Liste des Coloris / Taille", "desc": "Référentiel des coloris et tailles par article",
+         "numero": 646, "dossier": "Nouvelles requêtes - Référentiel Article", "categorie": "Référentiel Article", "maj": "22/05/2026"},
+        {"key": "commandes", "titre": "Commandes - Détail", "desc": "Détail des commandes et lignes associées",
+         "numero": 667, "dossier": "Nouvelles requêtes - Gestion Commerciale", "categorie": "Gestion Commerciale", "maj": "21/05/2026"},
+        {"key": None, "titre": "Stock Disponible - Dépôt Métier", "desc": "Disponibilités stock par dépôt et métier",
+         "numero": 662, "dossier": "Nouvelles requêtes - Gestion Commerciale", "categorie": "Gestion Commerciale", "maj": "20/05/2026"},
+        {"key": None, "titre": "Expéditions - Détail (après Facturation)", "desc": "Détail des expéditions après facturation",
+         "numero": 669, "dossier": "Nouvelles requêtes - Gestion Commerciale", "categorie": "Gestion Commerciale", "maj": "20/05/2026"},
+        {"key": None, "titre": "Commandes - Consolidation (Temps Réel)", "desc": "Consolidation temps réel des commandes",
+         "numero": 986, "dossier": "Nouvelles requêtes - Gestion Commerciale", "categorie": "Gestion Commerciale", "maj": "19/05/2026"},
+        {"key": None, "titre": "Liste des Produits", "desc": "Référentiel complet des produits",
+         "numero": 644, "dossier": "Nouvelles requêtes - Référentiel Article", "categorie": "Référentiel Article", "maj": "19/05/2026"},
+        {"key": None, "titre": "Factures - CA Consolidation (J-1)", "desc": "Chiffre d'affaires consolidé à J-1",
+         "numero": 671, "dossier": "Nouvelles requêtes - Gestion Financière", "categorie": "Gestion Financière", "maj": "18/05/2026"},
+    ])
+
+
+def get_favorites():
+    """Returns the session's favorited-report-numbers set, creating
+    it (empty) on first access. Session-state only — no backend/DB
+    involved, per the brief."""
+    if "favorites" not in st.session_state:
+        st.session_state.favorites = set()
+    return st.session_state.favorites
 
 # ============================================================
 # SNOWFLAKE DATA (shared by pages that need the ARTICLES table)

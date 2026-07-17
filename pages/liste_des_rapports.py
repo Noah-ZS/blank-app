@@ -3,7 +3,8 @@ import pandas as pd
 from common import (
     render_topbar, ICON_DOC, ICON_STAR, ICON_SEARCH, ICON_FOLDER,
     ICON_FILTER, ICON_CHEVRON_DOWN, ICON_CHEVRON_RIGHT, ICON_INFO,
-    ICON_LIST_VIEW, ICON_GRID_VIEW, ICON_SETTINGS, ICON_KEBAB
+    ICON_LIST_VIEW, ICON_GRID_VIEW, ICON_SETTINGS, ICON_KEBAB,
+    get_reports_catalog, get_favorites
 )
 from report_views import (
     render_article_coloris_view, render_mesures_produits_view,
@@ -57,6 +58,15 @@ def _close_tab(key):
         st.session_state.lr_open_tabs.remove(key)
     if st.session_state.lr_active_tab == key:
         st.session_state.lr_active_tab = "liste"
+
+
+def _toggle_favorite(numero):
+    favorites = get_favorites()
+    if numero in favorites:
+        favorites.remove(numero)
+    else:
+        favorites.add(numero)
+    st.rerun()
 
 
 # ------------------------------------------------------------
@@ -118,12 +128,15 @@ else:
     # instead of a table.
     # ========================================================
 
-    # ---------------- SEARCH / FILTER ROW ----------------
+    # ---------------- SEARCH / FILTER / SORT ROW (functional) ----------------
+
+    reports = get_reports_catalog()
+    favorites = get_favorites()
 
     search_col, filt_col, sort_label_col, sort_col = st.columns([6, 1.3, 0.9, 1.7])
 
     with search_col:
-        st.text_input(
+        search_query = st.text_input(
             "Recherche",
             placeholder="🔍  Rechercher un rapport par nom, numéro ou mot-clé...",
             label_visibility="collapsed",
@@ -131,42 +144,53 @@ else:
         )
 
     with filt_col:
-        st.button("▽  Filtres", key="filters_btn", use_container_width=True)
+        with st.popover("▽  Filtres", use_container_width=True):
+            selected_categories = st.multiselect(
+                "Catégorie",
+                sorted(reports["categorie"].unique()),
+                key="category_filter"
+            )
 
     with sort_label_col:
         st.markdown('<div style="padding-top:8px; font-size:13px; color:#6E6A63;">Trier par</div>', unsafe_allow_html=True)
 
     with sort_col:
-        st.selectbox(
-            "Trier par", ["Nom (A-Z)", "Nom (Z-A)", "Dernière modif.", "Utilisations"],
+        sort_option = st.selectbox(
+            "Trier par",
+            ["Nom (A-Z)", "Nom (Z-A)", "Dernière modif.", "Favoris en premier"],
             label_visibility="collapsed", key="sort_select"
         )
 
     st.markdown('<div style="height:22px;"></div>', unsafe_allow_html=True)
 
-    # ---------------- MOCK DATA ----------------
-    # "key" links a row to an entry in REPORT_TABS above; rows with
-    # key=None are static/non-interactive mock rows. (unchanged
-    # data model — only added "maj" for the card footer date.)
+    # ---------------- APPLY SEARCH / FILTER / SORT ----------------
 
-    reports = pd.DataFrame([
-        {"key": "mesures", "titre": "Mesures des Nouveaux Produits", "desc": "Suivi des mesures et performances produits",
-         "numero": 1722, "dossier": "Logistique - Infolog", "maj": "23/05/2026", "favori": False},
-        {"key": "article", "titre": "Article - Liste des Coloris / Taille", "desc": "Référentiel des coloris et tailles par article",
-         "numero": 646, "dossier": "Nouvelles requêtes - Référentiel Article", "maj": "22/05/2026", "favori": False},
-        {"key": "commandes", "titre": "Commandes - Détail", "desc": "Détail des commandes et lignes associées",
-         "numero": 667, "dossier": "Nouvelles requêtes - Gestion Commerciale", "maj": "21/05/2026", "favori": False},
-        {"key": None, "titre": "Stock Disponible - Dépôt Métier", "desc": "Disponibilités stock par dépôt et métier",
-         "numero": 662, "dossier": "Nouvelles requêtes - Gestion Commerciale", "maj": "20/05/2026", "favori": False},
-        {"key": None, "titre": "Expéditions - Détail (après Facturation)", "desc": "Détail des expéditions après facturation",
-         "numero": 669, "dossier": "Nouvelles requêtes - Gestion Commerciale", "maj": "20/05/2026", "favori": False},
-        {"key": None, "titre": "Commandes - Consolidation (Temps Réel)", "desc": "Consolidation temps réel des commandes",
-         "numero": 986, "dossier": "Nouvelles requêtes - Gestion Commerciale", "maj": "19/05/2026", "favori": False},
-        {"key": None, "titre": "Liste des Produits", "desc": "Référentiel complet des produits",
-         "numero": 644, "dossier": "Nouvelles requêtes - Référentiel Article", "maj": "19/05/2026", "favori": False},
-        {"key": None, "titre": "Factures - CA Consolidation (J-1)", "desc": "Chiffre d'affaires consolidé à J-1",
-         "numero": 671, "dossier": "Nouvelles requêtes - Gestion Financière", "maj": "18/05/2026", "favori": False},
-    ])
+    filtered_reports = reports.copy()
+
+    if search_query:
+        q = search_query.strip().lower()
+        mask = (
+            filtered_reports["titre"].str.lower().str.contains(q)
+            | filtered_reports["desc"].str.lower().str.contains(q)
+            | filtered_reports["numero"].astype(str).str.contains(q)
+        )
+        filtered_reports = filtered_reports[mask]
+
+    if selected_categories:
+        filtered_reports = filtered_reports[filtered_reports["categorie"].isin(selected_categories)]
+
+    if sort_option == "Nom (A-Z)":
+        filtered_reports = filtered_reports.sort_values("titre")
+    elif sort_option == "Nom (Z-A)":
+        filtered_reports = filtered_reports.sort_values("titre", ascending=False)
+    elif sort_option == "Dernière modif.":
+        filtered_reports = filtered_reports.assign(
+            _maj_sort=pd.to_datetime(filtered_reports["maj"], format="%d/%m/%Y")
+        ).sort_values("_maj_sort", ascending=False)
+    elif sort_option == "Favoris en premier":
+        filtered_reports = filtered_reports.assign(
+            _is_fav=filtered_reports["numero"].isin(favorites)
+        ).sort_values("_is_fav", ascending=False)
 
     REPERTOIRE_TREE = [
         {"label": "Tous les dossiers", "level": 0, "chevron": True, "state": "normal"},
@@ -249,63 +273,72 @@ else:
         # (they render as siblings, not children), which is what
         # caused the broken/empty card boxes before.
 
-        reports_list = reports.to_dict("records")
+        if filtered_reports.empty:
 
-        for row_start in range(0, len(reports_list), 2):
-            pair = reports_list[row_start:row_start + 2]
-            card_cols = st.columns(2, gap="medium")
+            st.info("Aucun rapport ne correspond à votre recherche.")
 
-            for card_col, r in zip(card_cols, pair):
-                with card_col:
-                    with st.container(border=True):
+        else:
 
-                        favori_class = "is-favori" if r["favori"] else ""
+            reports_list = filtered_reports.to_dict("records")
 
-                        top_l, top_r = st.columns([3, 1])
-                        with top_l:
+            for row_start in range(0, len(reports_list), 2):
+                pair = reports_list[row_start:row_start + 2]
+                card_cols = st.columns(2, gap="medium")
+
+                for card_col, r in zip(card_cols, pair):
+                    with card_col:
+                        with st.container(border=True):
+
+                            is_favori = r["numero"] in favorites
+                            star_icon = "⭐" if is_favori else "☆"
+
+                            top_l, top_r = st.columns([1, 5])
+                            with top_l:
+                                st.button(
+                                    star_icon,
+                                    key=f"fav_btn_{r['numero']}",
+                                    on_click=_toggle_favorite,
+                                    args=(r["numero"],),
+                                )
+                            with top_r:
+                                st.markdown(
+                                    f'<div class="rc-kebab" style="text-align:right;">{ICON_KEBAB}</div>',
+                                    unsafe_allow_html=True,
+                                )
+
+                            if pd.notna(r["key"]):
+                                st.button(
+                                    r["titre"],
+                                    key=f"open_{r['key']}_title_btn",
+                                    on_click=_open_tab,
+                                    args=(r["key"],),
+                                )
+                            else:
+                                st.markdown(
+                                    f'<div class="rc-card-title">{r["titre"]}</div>',
+                                    unsafe_allow_html=True,
+                                )
+
                             st.markdown(
-                                f'<div class="rc-favori-pill {favori_class}">{ICON_STAR} Favoris</div>',
-                                unsafe_allow_html=True,
-                            )
-                        with top_r:
-                            st.markdown(
-                                f'<div class="rc-kebab" style="text-align:right;">{ICON_KEBAB}</div>',
-                                unsafe_allow_html=True,
-                            )
-
-                        if pd.notna(r["key"]):
-                            st.button(
-                                r["titre"],
-                                key=f"open_{r['key']}_title_btn",
-                                on_click=_open_tab,
-                                args=(r["key"],),
-                            )
-                        else:
-                            st.markdown(
-                                f'<div class="rc-card-title">{r["titre"]}</div>',
-                                unsafe_allow_html=True,
-                            )
-
-                        st.markdown(
-                            f'<div class="rc-card-meta">N° {r["numero"]} · {r["dossier"]}</div>',
-                            unsafe_allow_html=True,
-                        )
-
-                        st.markdown('<div class="rc-card-footer-divider"></div>', unsafe_allow_html=True)
-
-                        foot_l, foot_r = st.columns(2)
-                        with foot_l:
-                            st.markdown(
-                                '<div class="rc-card-footer-label">Dernière modif.</div>',
-                                unsafe_allow_html=True,
-                            )
-                        with foot_r:
-                            st.markdown(
-                                f'<div class="rc-card-footer-label" style="text-align:right;">{r["maj"]}</div>',
+                                f'<div class="rc-card-meta">N° {r["numero"]} · {r["dossier"]}</div>',
                                 unsafe_allow_html=True,
                             )
 
-            st.markdown('<div style="height:16px;"></div>', unsafe_allow_html=True)
+                            st.markdown('<div class="rc-card-footer-divider"></div>', unsafe_allow_html=True)
+
+                            foot_l, foot_r = st.columns(2)
+                            with foot_l:
+                                st.markdown(
+                                    '<div class="rc-card-footer-label">Dernière modif.</div>',
+                                    unsafe_allow_html=True,
+                                )
+                            with foot_r:
+                                st.markdown(
+                                    f'<div class="rc-card-footer-label" style="text-align:right;">{r["maj"]}</div>',
+                                    unsafe_allow_html=True,
+                                )
+
+                st.markdown('<div style="height:16px;"></div>', unsafe_allow_html=True)
 
         # ---------------- FOOTER: PAGE SIZE + PAGINATION ----------------
 
