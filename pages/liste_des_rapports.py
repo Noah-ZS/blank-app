@@ -137,55 +137,59 @@ def _toggle_favorite(numero):
 
 # ------------------------------------------------------------
 # TAB BAR
-# Streamlit columns can't natively size to their content — they
-# only take a relative ratio of the row's total width. Rather
-# than estimate pixel widths from character counts (fragile: it
-# depends on the actual rendered font/padding, which a Python
-# formula can't know), the tab row is wrapped in a keyed
-# container and every column inside it is forced via CSS to
-# hug its own content (flex: 0 0 auto) — letting the browser do
-# the actual text measurement — except the trailing spacer
-# column, which keeps growing to push all tabs to the left.
+# Column widths are estimated from each label's character count
+# (Streamlit columns can't auto-size to content), so short and
+# long tab labels sit close to their own text instead of being
+# stretched into equal-width boxes. A trailing spacer column
+# soaks up the remaining row width so tabs stay left-packed.
 # ------------------------------------------------------------
+
+
+def _tab_col_width(label, closable):
+    width = 0.9 + len(label) * 0.085
+    if closable:
+        width += 0.45  # room for the adjoining × button
+    return width
+
 
 open_tabs = st.session_state.lr_open_tabs
 
-with st.container(key="tab_bar_row"):
-    # Initial ratios barely matter — the CSS above overrides every
-    # column to auto-size to its content regardless of what's passed
-    # here, aside from the trailing spacer column.
-    tab_cols = st.columns([1] * (len(open_tabs) + 1) + [6])
+tab_widths = [_tab_col_width("Liste des rapports", closable=False)]
+for key in open_tabs:
+    tab_widths.append(_tab_col_width(REPORT_TABS[key]["label"], closable=True))
+tab_widths.append(max(14.0 - sum(tab_widths), 0.5))  # trailing spacer
 
-    with tab_cols[0]:
-        st.button(
-            "Liste des rapports",
-            key="tab_liste_btn",
-            type="primary" if st.session_state.lr_active_tab == "liste" else "secondary",
-            on_click=_activate_tab,
-            args=("liste",),
-        )
+tab_cols = st.columns(tab_widths)
 
-    for i, key in enumerate(open_tabs):
-        with tab_cols[i + 1]:
-            label_col, close_col = st.columns([5, 1])
-            with label_col:
-                st.button(
-                    REPORT_TABS[key]["label"],
-                    key=f"tab_{key}_btn",
-                    type="primary" if st.session_state.lr_active_tab == key else "secondary",
-                    on_click=_activate_tab,
-                    args=(key,),
-                )
-            with close_col:
-                st.button(
-                    "✖",
-                    key=f"tab_{key}_close_btn",
-                    on_click=_close_tab,
-                    args=(key,),
-                )
+with tab_cols[0]:
+    st.button(
+        "Liste des rapports",
+        key="tab_liste_btn",
+        type="primary" if st.session_state.lr_active_tab == "liste" else "secondary",
+        on_click=_activate_tab,
+        args=("liste",),
+    )
+
+for i, key in enumerate(open_tabs):
+    with tab_cols[i + 1]:
+        label_col, close_col = st.columns([6, 1])
+        with label_col:
+            st.button(
+                REPORT_TABS[key]["label"],
+                key=f"tab_{key}_btn",
+                type="primary" if st.session_state.lr_active_tab == key else "secondary",
+                on_click=_activate_tab,
+                args=(key,),
+            )
+        with close_col:
+            st.button(
+                "✖",
+                key=f"tab_{key}_close_btn",
+                on_click=_close_tab,
+                args=(key,),
+            )
 
 st.divider()
-
 
 # ============================================================
 # TAB CONTENT (UNCHANGED dispatch logic)
@@ -313,25 +317,25 @@ else:
             }[item["state"]]
 
             if item.get("star"):
-                chevron_html = f'<span class="tree-chevron">{ICON_STAR}'</span>
+                chevron_html = f'<span class="tree-chevron">{ICON_STAR}</span>'
             elif item["chevron"] == "down":
-                chevron_html = f'<span class="tree-chevron">{ICON_CHEVRON_DOWN}'</span>
+                chevron_html = f'<span class="tree-chevron">{ICON_CHEVRON_DOWN}</span>'
             elif item["chevron"]:
-                chevron_html = f'<span class="tree-chevron">{ICON_CHEVRON_RIGHT}'</span>
+                chevron_html = f'<span class="tree-chevron">{ICON_CHEVRON_RIGHT}</span>'
             else:
-                chevron_html = '<span class="tree-chevron" style="width:15px;">'</span>
+                chevron_html = '<span class="tree-chevron" style="width:15px;"></span>'
 
-            icon_html = "" if item.get("star") else f'<span class="tree-icon">{ICON_FOLDER}'</span>
+            icon_html = "" if item.get("star") else f'<span class="tree-icon">{ICON_FOLDER}</span>'
 
             tree_html += (
                 f'<div class="tree-item {state_class} {indent_class}">'
-                f'{chevron_html}{icon_html}<span>{item["label"]}</div>'</span>
+                f'{chevron_html}{icon_html}<span>{item["label"]}</span></div>'
             )
 
         st.markdown(tree_html, unsafe_allow_html=True)
 
         st.markdown(
-            f'<div class="tree-footer">{ICON_SETTINGS}<span>Gérer les dossiers</div>'</span>,
+            f'<div class="tree-footer">{ICON_SETTINGS}<span>Gérer les dossiers</span></div>',
             unsafe_allow_html=True
         )
         st.markdown('</div>', unsafe_allow_html=True)
