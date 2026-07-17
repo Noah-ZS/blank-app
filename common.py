@@ -284,6 +284,40 @@ def inject_global_css():
             border: 1px solid transparent; color: var(--ink-soft);
         }
         .page-pill.current { border-color: var(--accent); color: var(--accent); }
+
+        /* ---------------- RESPONSIVE BREAKPOINTS ---------------- */
+        @media (max-width: 900px) {
+            section.main .block-container {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                padding-top: 0.8rem !important;
+                max-width: 100% !important;
+            }
+            .page-title { font-size: 28px; }
+            .page-subtitle { font-size: 13px; margin-bottom: 18px; }
+            section[data-testid="stSidebar"] { min-width: 200px; max-width: 200px; }
+        }
+
+        @media (max-width: 700px) {
+            /* Hide the sidebar on very small screens to free space */
+            section[data-testid="stSidebar"] { display: none; }
+            header[data-testid="stHeader"] { height: 2.2rem !important; min-height: 2.2rem !important; }
+            .topbar-right { gap: 8px; font-size: 13px; }
+            .page-title { font-size: 22px; }
+            .font-serif { font-size: 18px; }
+            .repertoire-title { font-size: 15px; }
+            .tree-item { font-size: 13px; gap: 6px; padding: 6px 2px; }
+            .rc-card-title { font-size: 15px; }
+            [class*="st-key-tab_"] button { font-size: 13px !important; padding: 4px 6px 8px 2px !important; }
+        }
+
+        @media (max-width: 420px) {
+            /* Extra-small phones: compress spacing */
+            section.main .block-container { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
+            .page-title { font-size: 20px; }
+            .page-subtitle { font-size: 12px; }
+            .pagination-row { gap: 4px; }
+        }
         </style>
         """,
         unsafe_allow_html=True,
