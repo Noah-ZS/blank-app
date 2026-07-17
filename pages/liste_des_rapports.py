@@ -38,7 +38,7 @@ st.markdown(
         border: none !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        padding: 4px 2px 0px 2px !important;
+        padding: 4px 2px 10px 2px !important;
         margin: 0 !important;
         font-size: 14.5px !important;
         font-weight: 500 !important;
@@ -145,10 +145,17 @@ def _toggle_favorite(numero):
 # ------------------------------------------------------------
 
 
+def _tab_label_width(label):
+    return 0.9 + len(label) * 0.085
+
+
+CLOSE_BTN_WIDTH = 0.55
+
+
 def _tab_col_width(label, closable):
-    width = 0.9 + len(label) * 0.085
+    width = _tab_label_width(label)
     if closable:
-        width += 0.45  # room for the adjoining × button
+        width += CLOSE_BTN_WIDTH
     return width
 
 
@@ -172,10 +179,14 @@ with tab_cols[0]:
 
 for i, key in enumerate(open_tabs):
     with tab_cols[i + 1]:
-        label_col, close_col = st.columns([6, 1])
+        label = REPORT_TABS[key]["label"]
+        # Inner split now scales with THIS label's own length — a flat
+        # [6, 1] ratio was leaving huge dead space after short labels
+        # inside a column sized for the longest one, pushing × far right.
+        label_col, close_col = st.columns([_tab_label_width(label), CLOSE_BTN_WIDTH])
         with label_col:
             st.button(
-                REPORT_TABS[key]["label"],
+                label,
                 key=f"tab_{key}_btn",
                 type="primary" if st.session_state.lr_active_tab == key else "secondary",
                 on_click=_activate_tab,
