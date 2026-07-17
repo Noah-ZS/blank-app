@@ -244,43 +244,15 @@ else:
                 key="category_filter"
             )
 
-    # Render a compact "Trier par" pill next to the functional selectbox
     with sort_label_col:
-        st.markdown(
-            '<div class="sort-combo"><div class="sort-pill">Trier par</div></div>',
-            unsafe_allow_html=True,
-        )
+        st.markdown('<div style="padding-top:8px; font-size:13px; color:#6E6A63;">Trier par</div>', unsafe_allow_html=True)
 
     with sort_col:
         sort_option = st.selectbox(
             "Trier par",
             ["Nom (A-Z)", "Nom (Z-A)", "Dernière modif.", "Favoris en premier"],
-            label_visibility="collapsed",
-            key="sort_select",
+            label_visibility="collapsed", key="sort_select"
         )
-
-    # Page-local CSS to make the pill and selectbox read as one control.
-    st.markdown(
-        """
-        <style>
-        .sort-combo { display: flex; align-items: center; height: 36px; }
-        .sort-pill {
-            background: #F1EEE7; color: #6E6A63; font-size:13px; padding: 8px 10px;
-            border: 1px solid var(--line); border-radius: 8px 0 0 8px; height: 36px;
-            display: inline-flex; align-items: center; justify-content: center;
-        }
-        /* Try to remove the selectbox's left radius so it visually adjoins the pill */
-        [class*="st-key-sort_select"] button, [class*="st-key-sort_select"] div[role="button"] {
-            border-top-left-radius: 0 !important;
-            border-bottom-left-radius: 0 !important;
-            height: 36px !important;
-        }
-        /* Slightly reduce spacing between the two columns */
-        .stColumns [class*="st-key-sort_select"] { margin-left: -6px; }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
 
     st.markdown('<div style="height:22px;"></div>', unsafe_allow_html=True)
 
