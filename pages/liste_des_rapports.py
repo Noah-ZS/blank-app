@@ -243,10 +243,6 @@ else:
                 sorted(reports["categorie"].unique()),
                 key="category_filter"
             )
-
-    with sort_label_col:
-        st.markdown('<div style="padding-top:8px; font-size:13px; color:#6E6A63;">Trier par</div>', unsafe_allow_html=True)
-
     with sort_col:
         sort_option = st.selectbox(
             "Trier par",
