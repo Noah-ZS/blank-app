@@ -64,7 +64,7 @@ def _make_export_dialog(report_key, csv_bytes, default_subject, filename):
             st.markdown("📧 &nbsp; **Pour recevoir le rapport par e-mail**")
 
             to_email = st.text_input(
-                "E-mail du destinataire", value="noah.jubain@talan.com",
+                "E-mail du destinataire", value="generic.cognos@hermes.com",
                 key=f"{report_key}_export_to_email"
             )
             subject = st.text_input(
@@ -79,26 +79,31 @@ def _make_export_dialog(report_key, csv_bytes, default_subject, filename):
 
             spacer, c_cancel, c_ok = st.columns([2, 1, 1])
 
+            cancel_clicked = False
+            ok_clicked = False
+
             with c_cancel:
-                if st.button("Annuler", key=f"{report_key}_cancel_email_btn", use_container_width=True):
-                    st.rerun()
+                cancel_clicked = st.button(
+                    "Annuler", key=f"{report_key}_cancel_email_btn", use_container_width=True
+                )
 
             with c_ok:
-                if st.button("OK", key=f"{report_key}_ok_email_btn", type="primary", use_container_width=True):
-                    try:
-                        send_email_with_attachment(
-                            to_email=to_email, subject=subject, body=body,
-                            attachment_bytes=csv_bytes, attachment_filename=filename,
-                        )
-                        st.markdown(
-                            '<div style="background:#D4EDDA; border:1px solid #C3E6CB; border-radius:6px; padding:10px 12px; color:#155724; font-size:14px; white-space:nowrap;">✅ E-mail envoyé avec succès.</div>',
-                            unsafe_allow_html=True
-                        )
-                    except Exception as e:
-                        st.markdown(
-                            f'<div style="background:#F8D7DA; border:1px solid #F5C6CB; border-radius:6px; padding:10px 12px; color:#721C24; font-size:14px;">❌ Échec de l\'envoi de l\'e-mail : {e}</div>',
-                            unsafe_allow_html=True
-                        )
+                ok_clicked = st.button(
+                    "OK", key=f"{report_key}_ok_email_btn", type="primary", use_container_width=True
+                )
+
+            if cancel_clicked:
+                st.rerun()
+
+            if ok_clicked:
+                try:
+                    send_email_with_attachment(
+                        to_email=to_email, subject=subject, body=body,
+                        attachment_bytes=csv_bytes, attachment_filename=filename,
+                    )
+                    st.success("✅ E-mail envoyé avec succès.")
+                except Exception as e:
+                    st.error(f"❌ Échec de l'envoi de l'e-mail : {e}")
 
         st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
@@ -221,7 +226,7 @@ def render_article_coloris_view():
 
     b1, b2, b3, b4 = st.columns(4)
     with b1:
-        st.button("Afficher", on_click=reveal_table, key="art_afficher_btn", type="primary")
+        st.button("Afficher", on_click=reveal_table, key="art_afficher_btn")
     with b2:
         st.button("Réinitialiser", on_click=reset_filters, key="art_reinit_btn")
     with b3:
@@ -342,7 +347,7 @@ def render_mesures_produits_view():
 
     b1, b2, b3 = st.columns(3)
     with b1:
-        st.button("Afficher", on_click=reveal_table, key="mes_afficher_btn", type="primary")
+        st.button("Afficher", on_click=reveal_table, key="mes_afficher_btn")
     with b2:
         st.button("Réinitialiser", on_click=reset_filters, key="mes_reinit_btn")
     with b3:
@@ -452,7 +457,7 @@ def render_commandes_detail_view():
 
     b1, b2, b3 = st.columns(3)
     with b1:
-        st.button("Afficher", on_click=reveal_table, key="cmd_afficher_btn", type="primary")
+        st.button("Afficher", on_click=reveal_table, key="cmd_afficher_btn")
     with b2:
         st.button("Réinitialiser", on_click=reset_filters, key="cmd_reinit_btn")
     with b3:
