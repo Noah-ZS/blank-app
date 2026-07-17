@@ -206,7 +206,9 @@ def inject_global_css():
 
         /* ---------------- LISTE DES RAPPORTS: RÉPERTOIRES ---------------- */
 
-        .repertoire-panel { background: #FFFFFF; border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; }
+          /* Make repertoire panel inline with surrounding layout —
+              remove boxed background/border so no empty rectangle appears. */
+          .repertoire-panel { background: transparent; border: none; padding: 0; }
         .repertoire-title { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600; margin-bottom: 12px; }
         .tree-item { display: flex; align-items: center; gap: 7px; padding: 6px 4px; font-size: 13.5px; color: #4A4640; border-radius: 6px; }
         .tree-item:hover { background: #F5F2EC; }
