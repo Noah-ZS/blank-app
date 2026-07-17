@@ -59,6 +59,11 @@ def _make_export_dialog(report_key, csv_bytes, default_subject, filename):
 
         st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
+        email_status = None  # ("success" | "error", message) — rendered
+                              # AFTER this container closes, at the dialog's
+                              # top level, so it can never end up squeezed
+                              # into the narrow OK-button column.
+
         with st.container(border=True):
 
             st.markdown("📧 &nbsp; **Pour recevoir le rapport par e-mail**")
@@ -101,9 +106,18 @@ def _make_export_dialog(report_key, csv_bytes, default_subject, filename):
                         to_email=to_email, subject=subject, body=body,
                         attachment_bytes=csv_bytes, attachment_filename=filename,
                     )
-                    st.success("✅ E-mail envoyé avec succès.")
+                    email_status = ("success", "✅ E-mail envoyé avec succès.")
                 except Exception as e:
-                    st.error(f"❌ Échec de l'envoi de l'e-mail : {e}")
+                    email_status = ("error", f"❌ Échec de l'envoi de l'e-mail : {e}")
+
+        # Rendered here — fully outside both the bordered container
+        # and the columns above, guaranteed full dialog width.
+        if email_status:
+            status_type, message = email_status
+            if status_type == "success":
+                st.success(message)
+            else:
+                st.error(message)
 
         st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
