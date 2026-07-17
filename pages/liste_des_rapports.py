@@ -20,7 +20,7 @@ st.markdown(
 )
 
 # ============================================================
-# PAGE-LOCAL STYLE: TAB BAR
+# PAGE-LOCAL STYLE: TAB BAR (PATCHED FOR OVERLAP FIX)
 # ============================================================
 
 st.markdown(
@@ -37,14 +37,14 @@ st.markdown(
         border: none !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        padding: 4px 4px 10px 16px !important; /* Left padding for spacing */
+        padding: 4px 4px 10px 16px !important;
         margin: 0 !important;
         font-size: 14.5px !important;
         font-weight: 500 !important;
         color: var(--ink, #1C1B19) !important;
         border-bottom: 2px solid transparent !important;
     }
-
+    
     [class*="st-key-tab_"]:not([class*="_close_btn"]) button:hover {
         color: var(--accent, #D9642A) !important;
         background: transparent !important;
@@ -56,17 +56,17 @@ st.markdown(
         border: none !important;
         box-shadow: none !important;
         color: #B4AFA6 !important;
-        padding: 4px 16px 10px 4px !important; /* Right padding for spacing */
+        padding: 4px 16px 10px 4px !important; 
         margin: 0 !important;
         font-size: 14px !important;
         border-bottom: 2px solid transparent !important;
     }
-
+    
     [class*="st-key-tab_"][class*="_close_btn"] button:hover {
         color: #E0473B !important;
     }
 
-    /* 4. Active state: apply the orange underline to BOTH the label and the close button */
+    /* 4. Active state underline */
     [class*="st-key-tab_"] button[kind="primary"],
     [class*="st-key-tab_"] [data-testid="stBaseButton-primary"],
     [class*="st-key-tab_"] [data-testid="baseButton-primary"] {
@@ -75,15 +75,27 @@ st.markdown(
         border-bottom: 2px solid var(--accent, #D9642A) !important;
     }
 
-    /* 5. FORCE COLUMNS TO HUG CONTENT */
-    [data-testid="stHorizontalBlock"]:has([class*="st-key-tab_"]) {
-        gap: 0px !important; 
+    /* 5. OVERLAP FIX: Force exact sizing and horizontal scrolling */
+    
+    /* Force the widget's bounding box to match the unwrapped text */
+    [class*="st-key-tab_"] {
+        width: max-content !important; 
     }
 
+    /* Turn the Streamlit row into a strict flex-row to push items naturally */
+    [data-testid="stHorizontalBlock"]:has([class*="st-key-tab_"]) {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important; /* Adds scroll if tabs exceed screen width */
+        gap: 0px !important;
+        padding-bottom: 4px !important; 
+    }
+    
+    /* Allow columns to shrink-wrap their content perfectly */
     [data-testid="stHorizontalBlock"]:has([class*="st-key-tab_"]) > [data-testid="column"] {
-        min-width: max-content !important;
-        width: max-content !important;
         flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
     }
     </style>
     """,
@@ -142,11 +154,9 @@ def _toggle_favorite(numero):
 open_tabs = st.session_state.lr_open_tabs
 
 with st.container(key="tab_bar_row"):
-    # Flattened layout: 1 for Home + 2 for each opened tab + 1 spacer at the end
     total_elements = 1 + (len(open_tabs) * 2)
     tab_cols = st.columns([1] * total_elements + [10])
 
-    # 1. Home Tab
     with tab_cols[0]:
         st.button(
             "Liste des rapports",
@@ -156,12 +166,10 @@ with st.container(key="tab_bar_row"):
             args=("liste",),
         )
 
-    # 2. Dynamic Tabs
     col_index = 1
     for key in open_tabs:
         is_active = (st.session_state.lr_active_tab == key)
-
-        # Label
+        
         with tab_cols[col_index]:
             st.button(
                 REPORT_TABS[key]["label"],
@@ -171,8 +179,7 @@ with st.container(key="tab_bar_row"):
                 args=(key,),
             )
         col_index += 1
-
-        # Close Button
+        
         with tab_cols[col_index]:
             st.button(
                 "✖",
