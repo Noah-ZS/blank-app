@@ -159,16 +159,16 @@ left_col, right_col = st.columns(2, gap="large")
 with left_col:
     rows_html = ""
     for _, r in recent_reports.iterrows():
-        rows_html += f"""
-        <div class="list-row-v2">
-            <div class="list-icon">{ICON_DOC}</div>
-            <div>
-                <div class="list-title">{r['titre']}</div>
-                <div class="list-category">{r['categorie']}</div>
-            </div>
-            <div class="list-meta">{r['quand']}</div>
-        </div>
-        """
+        rows_html += (
+            f'<div class="list-row-v2">'
+            f'<div class="list-icon">{ICON_DOC}</div>'
+            f'<div>'
+            f'<div class="list-title">{r["titre"]}</div>'
+            f'<div class="list-category">{r["categorie"]}</div>'
+            f'</div>'
+            f'<div class="list-meta">{r["quand"]}</div>'
+            f'</div>'
+        )
 
     st.markdown(
         f"""
@@ -194,15 +194,15 @@ with right_col:
     else:
         rows_html = ""
         for _, r in favorite_reports.iterrows():
-            rows_html += f"""
-            <div class="list-row-v2">
-                <div class="list-icon starred">{ICON_STAR}</div>
-                <div>
-                    <div class="list-title">{r['titre']}</div>
-                    <div class="list-category">{r['categorie']}</div>
-                </div>
-            </div>
-            """
+            rows_html += (
+                f'<div class="list-row-v2">'
+                f'<div class="list-icon starred">{ICON_STAR}</div>'
+                f'<div>'
+                f'<div class="list-title">{r["titre"]}</div>'
+                f'<div class="list-category">{r["categorie"]}</div>'
+                f'</div>'
+                f'</div>'
+            )
 
     st.markdown(
         f"""
