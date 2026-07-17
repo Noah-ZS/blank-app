@@ -297,7 +297,6 @@ else:
 
     with left_col:
 
-        st.markdown('<div class="repertoire-panel">', unsafe_allow_html=True)
         st.markdown('<div class="repertoire-title font-serif">Répertoires</div>', unsafe_allow_html=True)
 
         st.text_input(
@@ -340,7 +339,6 @@ else:
             f'<div class="tree-footer">{ICON_SETTINGS}<span>Gérer les dossiers</span></div>',
             unsafe_allow_html=True
         )
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with right_col:
 
