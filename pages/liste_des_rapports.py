@@ -71,12 +71,14 @@ st.markdown(
         border: none !important;
         box-shadow: none !important;
         color: #B4AFA6 !important;
-        padding: 0 !important;
-        margin-top: 6px !important;
+        padding: 0 4px !important;
+        margin-top: 2px !important;
+        margin-left: -6px !important;
         height: auto !important;
         min-height: 0 !important;
         font-size: 12px !important;
         width: auto !important;
+        line-height: 1 !important;
     }
     [class*="st-key-tab_"][class*="_close_btn"] button:hover {
         color: #E0473B !important;
@@ -172,7 +174,7 @@ with tab_cols[0]:
 
 for i, key in enumerate(open_tabs):
     with tab_cols[i + 1]:
-        label_col, close_col = st.columns([6, 1])
+        label_col, close_col = st.columns([6, 0.7], gap="small")
         with label_col:
             st.button(
                 REPORT_TABS[key]["label"],
