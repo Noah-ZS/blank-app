@@ -90,9 +90,15 @@ def _make_export_dialog(report_key, csv_bytes, default_subject, filename):
                             to_email=to_email, subject=subject, body=body,
                             attachment_bytes=csv_bytes, attachment_filename=filename,
                         )
-                        st.success("✅ E-mail envoyé avec succès.")
+                        st.markdown(
+                            '<div style="background:#D4EDDA; border:1px solid #C3E6CB; border-radius:6px; padding:10px 12px; color:#155724; font-size:14px; white-space:nowrap;">✅ E-mail envoyé avec succès.</div>',
+                            unsafe_allow_html=True
+                        )
                     except Exception as e:
-                        st.error(f"❌ Échec de l'envoi de l'e-mail : {e}")
+                        st.markdown(
+                            f'<div style="background:#F8D7DA; border:1px solid #F5C6CB; border-radius:6px; padding:10px 12px; color:#721C24; font-size:14px;">❌ Échec de l\'envoi de l\'e-mail : {e}</div>',
+                            unsafe_allow_html=True
+                        )
 
         st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
