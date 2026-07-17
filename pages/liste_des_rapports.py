@@ -19,6 +19,18 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Reduce the top whitespace for this page only (shrinks the block container's
+# top padding so the left repertoire column sits closer to the page header).
+st.markdown(
+    """
+    <style>
+    section.main .block-container { padding-top: 0.4rem !important; }
+    .repertoire-title { margin-top: 0 !important; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # ============================================================
 # PAGE-LOCAL STYLE: TAB BAR
 # Scoped to this page only (doesn't touch common.py). Overrides
