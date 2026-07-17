@@ -159,7 +159,6 @@ def _remove_favorite(numero):
     unfavoriting here is instantly reflected there too."""
     favorites = get_favorites()
     favorites.discard(numero)
-    st.rerun()
 
 # ============================================================
 # KPI CARDS

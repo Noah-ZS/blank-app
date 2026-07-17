@@ -66,7 +66,6 @@ def _toggle_favorite(numero):
         favorites.remove(numero)
     else:
         favorites.add(numero)
-    st.rerun()
 
 
 # ------------------------------------------------------------
