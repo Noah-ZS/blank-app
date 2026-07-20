@@ -78,28 +78,32 @@ st.markdown(
 
     /* Close (×) buttons: no box, just a small subtle glyph that
        reddens on hover — present for function, invisible as chrome. */
-    [class*="st-key-tab_"][class*="_close_btn"] button {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        color: #B4AFA6 !important;
-        padding: 0 4px !important;
-        margin-top: 2px !important;
-        margin-left: -6px !important;
-        height: auto !important;
-        min-height: 0 !important;
-        font-size: 12px !important;
-        width: auto !important;
-        line-height: 1 !important;
-    }
-    [class*="st-key-tab_"][class*="_close_btn"] button:hover {
-        color: #E0473B !important;
-    }
+[class*="st-key-tab_"][class*="_close_btn"] button {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #B4AFA6 !important;
+
+    /* tighter spacing */
+    padding: 0 1px !important;
+    margin: 0 0 0 -2px !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+    width: auto !important;
+    min-width: 18px !important;
+
+    font-size: 11px !important;
+    line-height: 1 !important;
+}
+[class*="st-key-tab_"]:not([class*="_close_btn"]) button {
+    padding: 4px 0 8px 0 !important;
+}
     </style>
     """,
     unsafe_allow_html=True,
 )
-
+ 
 # ============================================================
 # REPORT REGISTRY
 # Maps a report key -> its tab label and the shared view function
@@ -186,7 +190,7 @@ with tab_cols[0]:
 
 for i, key in enumerate(open_tabs):
     with tab_cols[i + 1]:
-        label_col, close_col = st.columns([6, 0.7], gap="small")
+        label_col, close_col = st.columns([1, 0.12], gap="small")
         with label_col:
             st.button(
                 REPORT_TABS[key]["label"],
