@@ -123,6 +123,10 @@ def inject_global_css():
             color: #57534A !important;
             border-left: 3px solid transparent;
             margin-bottom: 2px;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            line-height: 1.25;
         }
         section[data-testid="stSidebar"] a[data-testid^="stPageLink"]:hover {
             background: #F1EEE7;
