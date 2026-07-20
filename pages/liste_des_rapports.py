@@ -78,49 +78,39 @@ st.markdown(
 
     /* Close (×) buttons: no box, just a small subtle glyph that
        reddens on hover — present for function, invisible as chrome. */
+/* Close (×) button alignment */
+[class*="st-key-tab_"][class*="_close_btn"] {
+    display: flex !important;
+    align-items: center !important;   /* vertical centering */
+    justify-content: center !important;
+    height: 100% !important;
+    padding-top: 2px !important;      /* fine-tune baseline */
+}
+
 [class*="st-key-tab_"][class*="_close_btn"] button {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 16px !important;
+    min-width: 16px !important;
+    height: 16px !important;
+    min-height: 16px !important;
+
+    padding: 0 !important;
+    margin: 0 0 0 -3px !important;
+
     color: #B4AFA6 !important;
-
-    /* tighter spacing */
-    padding: 0 1px !important;
-    margin: 0 0 0 -2px !important;
-
-    height: auto !important;
-    min-height: 0 !important;
-    width: auto !important;
-    min-width: 18px !important;
-
     font-size: 11px !important;
     line-height: 1 !important;
 }
-/* Keep each tab on ONE line */
-[class*="st-key-tab_"]:not([class*="_close_btn"]) button {
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
 
-    width: auto !important;
-    min-width: max-content !important;   /* key fix */
-    padding: 4px 0 8px 0 !important;
-}
-
-/* Prevent the inner text element from wrapping */
-[class*="st-key-tab_"]:not([class*="_close_btn"]) button p,
-[class*="st-key-tab_"]:not([class*="_close_btn"]) button span {
-    white-space: nowrap !important;
-    overflow-wrap: normal !important;
-    word-break: keep-all !important;
-    margin: 0 !important;
-}
-
-/* Let the tab container grow to the text width */
-[class*="st-key-tab_"] {
-    width: auto !important;
-    min-width: max-content !important;
-    flex: 0 0 auto !important;
+[class*="st-key-tab_"][class*="_close_btn"] button:hover {
+    color: #E0473B !important;
 }
     </style>
     """,
@@ -213,7 +203,7 @@ with tab_cols[0]:
 
 for i, key in enumerate(open_tabs):
     with tab_cols[i + 1]:
-         label_col, close_col = st.columns([1, 0.06], gap="medium") 
+         label_col, close_col = st.columns([1, 0.08], gap="small")
          with label_col:
             st.button(
                 REPORT_TABS[key]["label"],
