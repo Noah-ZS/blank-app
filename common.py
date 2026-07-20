@@ -115,7 +115,10 @@ def inject_global_css():
             color: var(--accent); margin-bottom: 22px;
         }
 
-        /* Style native st.page_link anchors to look like our nav items */
+        /* Style native st.page_link anchors to look like our nav items.
+           Long labels (e.g. "Changer votre mot de passe") must WRAP
+           onto a second line rather than clip — see the two rules
+           below the base one. */
         section[data-testid="stSidebar"] a[data-testid^="stPageLink"] {
             display: flex; align-items: center; gap: 10px;
             padding: 9px 12px !important; border-radius: 8px;
@@ -127,6 +130,25 @@ def inject_global_css():
             overflow: visible !important;
             text-overflow: clip !important;
             line-height: 1.25;
+        }
+        /* Flex items default to min-width:auto, which stops their
+           content from wrapping and lets it overflow/clip instead —
+           this is what was truncating the last letter(s). Also, the
+           actual label text lives in a NESTED stMarkdownContainer/<p>
+           that has its own independent overflow behavior, so the
+           parent's white-space/overflow rules above don't reach it
+           on their own; both need to be targeted directly. */
+        section[data-testid="stSidebar"] a[data-testid^="stPageLink"] > * {
+            min-width: 0;
+        }
+        section[data-testid="stSidebar"] a[data-testid^="stPageLink"] [data-testid="stMarkdownContainer"],
+        section[data-testid="stSidebar"] a[data-testid^="stPageLink"] [data-testid="stMarkdownContainer"] p {
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            word-break: break-word;
+            min-width: 0;
+            margin: 0;
         }
         section[data-testid="stSidebar"] a[data-testid^="stPageLink"]:hover {
             background: #F1EEE7;
@@ -491,7 +513,7 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 SENDER_EMAIL = "noahsamueljubain@gmail.com"
 
- 
+
 def send_email_with_attachment(to_email, subject, body, attachment_bytes=None, attachment_filename=None):
     msg = MIMEMultipart()
     msg["From"] = SENDER_EMAIL
@@ -510,4 +532,4 @@ def send_email_with_attachment(to_email, subject, body, attachment_bytes=None, a
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         server.starttls(context=context)
         server.login(SENDER_EMAIL, st.secrets["smtp_password"])
-        server.sendmail(SENDER_EMAIL, to_email, msg.as_string())
+        server.sendmail(SENDER_EMAIL, to_email, msg.as_string()) 
